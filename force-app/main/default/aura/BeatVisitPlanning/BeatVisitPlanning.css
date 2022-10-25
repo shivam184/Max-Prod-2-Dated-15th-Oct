@@ -1,0 +1,29 @@
+.THIS .custom-box { 
+    background-color: #fff;
+    padding: 1rem;
+    border: 1px solid #d8dde6;
+    border-radius: 2px;
+    font-size: 14px;
+    margin-bottom:8px;
+}
+
+
+.THIS .pad{
+    padding: 10px;
+    background: #003A7A;
+    color: #fff;
+    font-size:15px;
+    font-weight:bolder;
+}
+
+.THIS .wid{
+    width:7%;
+}
+
+.THIS .widt{
+    width:100%;
+}
+
+.THIS .scrollerSize{
+    height:600px;
+}

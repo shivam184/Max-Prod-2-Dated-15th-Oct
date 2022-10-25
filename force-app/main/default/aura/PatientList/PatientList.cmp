@@ -1,0 +1,920 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global" 
+                controller="PatientListController">
+    <!-- call doInit method on component load -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- aura attributes to store data/values --> 
+    <aura:attribute name="listOfAllAccounts" type="list"/> 
+    <aura:attribute name="PaginationList" type="list"/> 
+    <aura:attribute name="selectedCount" type="integer" default="0"
+                    description="selected Records Count"/>
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer"/>
+    <aura:attribute name="totalRecordsCount" type="Integer"/>
+    <aura:attribute name="pageSize" type="Integer" default="15"
+                    description="number of records to be display on per page"/>
+    <aura:attribute name="currentPage" type="integer" default="1"/>
+    <aura:attribute name="totalPagesCount" type="integer"/>
+    <aura:attribute name="bNoRecordsFound" type="boolean"/>
+    
+    <!-- aura attributes for individual Vital--> 
+    <aura:attribute name="isOpen" type="boolean" default="false"/>
+    <aura:attribute name="listVital" type="list"/> 
+    <aura:attribute name="listPrescription" type="list"/>
+    <aura:attribute name="VitalUser" type="string"/> 
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="symptomps" type="Map"/>
+    <aura:attribute name="WorseningSymptomps" type="Map"/>
+    <aura:attribute name="gender" type="Map"/>
+    <aura:attribute name="familyMemberSymptomps" type="Map"/>
+    
+    <aura:attribute name="DevelopingCheckBox8AM" type="boolean" default="FALSE"/>     
+    <aura:attribute name="DevelopingCheckBox2PM" type="boolean" default="FALSE"/>
+    <aura:attribute name="DevelopingCheckBox8PM" type="boolean" default="FALSE"/>
+    
+     <aura:attribute name="strComorbidities" type="string" default=""/>
+    
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <br/>
+    
+    
+    <article class="slds-card slds-table slds-table_bordered slds-table_cell-buffer slds-theme_shade">
+        
+        <!-- div class="slds-m-bottom_small slds-page-header">
+            <div class="slds-media">
+                <div class="slds-media__figure">
+                    <lightning:icon iconName="standard:avatar" size="medium" variant="slds-icon-inverse"></lightning:icon>
+                </div>
+                <div class="slds-media__body">
+                    <div class="slds-page-header__title slds-text-heading_small">List of Vital</div>
+                </div>
+                <div class="slds-media__figure slds-media__figure_reverse">
+                    <p class="slds-m-around_small">
+                        <span class="slds-badge slds-badge_lightest" style="display:inline-block">
+                            Total Records : {!v.selectedCount > 0 ? v.selectedCount + '/' : ''} {!v.totalRecordsCount} 
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div -->
+        
+        
+        
+        
+        <div class="slds-section slds-is-close" aura:id="fruitsSection">
+            <h3 class="slds-section__title">
+                <button aria-controls="fruitsList" class="slds-button slds-section__title-action">
+                    <span class="slds-media__figure">
+                        <lightning:icon iconName="standard:avatar" size="medium" variant="slds-icon-inverse"></lightning:icon>
+                    </span>
+                    <span class="slds-truncate" title="Fruits">List of Vital ({!v.selectedCount > 0 ? v.selectedCount + '/' : ''} {!v.totalRecordsCount})</span>
+                
+                    <!-- span class="slds-button slds-button_icon-border-filled" >
+                        <lightning:icon iconName="utility:switch"
+                                        size="x-small"
+                                        class="slds-section__title-action-icon slds-button__icon_left"
+                                        alternativeText="button icon" 
+                                        />
+                    </span -->
+                    
+                    <span class=" forceDeferredDropDownAction" data-aura-rendered-by="529:0" data-aura-class="forceDeferredDropDownAction" style="margin-left:auto;">
+                        <a class="slds-button slds-button--icon-x-small slds-button--icon-border-filled" aria-haspopup="true" role="button" data-aura-rendered-by="530:0" onclick="{!c.toggleSection}" data-auraId="fruitsSection">
+                            <lightning:icon iconName="utility:down"
+                                            size="x-small"
+                                            class="slds-section__title-action-icon slds-button__icon_right"
+                                            alternativeText="button icon" styleClass="margin-bottom: 6px;" 
+                                            />
+                        </a>
+                    </span>
+                </button>
+            </h3>
+            <div class="slds-section__content" id="fruitsList">
+                <aura:if isTrue="{!v.bNoRecordsFound}">
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                        <span class="slds-assistive-text">error</span>
+                        <h2>No record found.</h2>
+                    </div>
+                    <aura:set attribute="else">     
+                        <table class="slds-card slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th style="width:3.25rem;" class="slds-text-align_right slds-hide">
+                                        <div class="slds-form-element ">
+                                            <div class="slds-form-element__control">
+                                                <label class="slds-checkbox">
+                                                    <ui:inputCheckbox disabled="{!v.totalRecordsCount == 0}"
+                                                                      aura:id="selectAllId"
+                                                                      change="{!c.selectAllCheckbox}"/> 
+                                                    <span class="slds-checkbox_faux"></span>
+                                                    <span class="slds-form-element__label"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Type">Day</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Type">Date</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Type">Morning</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Type">Evening</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.PaginationList}" var="obj">
+                                    <tr>
+                                        <th scope="row" >
+                                            <div   class="slds-truncate" title="{!obj.objAccount.Quarantine_Day__c}">
+                                                <a Data-userinput="{!obj.objAccount.Id}" onclick="{!c.fncOpenRecord}">  {!obj.objAccount.Quarantine_Day__c}</a>  
+                                            </div>
+                                        </th> 
+                                        <th scope="row">
+                                            <div  class="slds-truncate" title="{!obj.objAccount.Date__c}">
+                                                {!obj.objAccount.Date__c}
+                                            </div>
+                                        </th>
+                                        <th scope="row">
+                                            <div   class="slds-truncate" title="{!obj.Verify_in_Morning__c}">
+                                                <lightning:input disabled='true' type="checkbox"  checked="{!obj.objAccount.Verify_in_Morning__c}" />
+                                            </div>
+                                        </th>
+                                        <th scope="row">
+                                            <div   class="slds-truncate" title="{!obj.Verify_in_Evening__c}">
+                                                <lightning:input disabled='true' type="checkbox"  checked="{!obj.objAccount.Verify_in_Evening__c}" />
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                        <br/>
+                    </aura:set> 
+                </aura:if>
+                
+                
+                <br></br>
+                
+                
+                <div class="slds-m-around_xx-large">
+                    <aura:if isTrue="{!v.isOpen}">
+                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <lightning:buttonIcon iconName="utility:close"
+                                                          onclick="{! c.closeModel }"
+                                                          alternativeText="close"
+                                                          variant="bare-inverse"
+                                                          class="slds-modal__close"/>
+                                    <h6 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Home Quarantine - Daily Monitoring Chart</h6>
+                                </header>
+                                
+                                <div class="slds-modal__content slds-p-around_small" id="modal-content-id-1">
+                                    <div  class="slds-grid slds-wrap">
+									<div  class="slds-col slds-medium-size_6-of-12 slds-large-size_4-of-12">
+                                            <span class="slds-text-title"> Patient’s Name:</span><br/>
+											 <span style="font-weight:bold;">  {!v.listVital[0].Isolation_Max_Home__r.Patient_Name__c}</span>
+                                        </div>
+										<div  class="slds-col slds-medium-size_6-of-12 slds-large-size_4-of-12">
+                                            <span class="slds-text-title" > Age/ Gender:</span><br/>
+											<span style="font-weight:bold;">  {!v.listVital[0].Isolation_Max_Home__r.Age__c}&nbsp;&nbsp;{!v.listVital[0].Isolation_Max_Home__r.Gender__c}</span>
+                                        </div>
+										<div  class="slds-col slds-medium-size_6-of-12 slds-large-size_4-of-12">
+                                            <span  class="slds-text-title"> Co-morbidities:</span><br/>
+											 <span class="slds-hyphenate" style="font-weight:bold;"> {!v.strComorbidities}</span>
+                                        </div>
+										<div  class="slds-col slds-medium-size_6-of-12 slds-large-size_4-of-12">
+                                            <span  class="slds-text-title"> Consultant Name:</span><br/>
+											 <span style="font-weight:bold;"> {!v.listVital[0].Isolation_Max_Home__r.Doctor__r.Name}</span>
+                                        </div>
+										<div  class="slds-col slds-medium-size_6-of-12 slds-large-size_4-of-12">
+                                            <span  class="slds-text-title">Contact:</span><br/>
+											  <span style="font-weight:bold;"> {!v.listVital[0].Isolation_Max_Home__r.Doctor__r.PersonMobilePhone}</span>
+                                        </div>
+                                        </div>
+										
+									
+								
+                                   
+                                    <br/>
+                                    <div  class="slds-grid">
+                                        <div  class="slds-col slds-size_12-of-12">
+                                       
+                                            <br/>
+                                            <h3 class="slds-section-title--divider" style="background: rgb(221, 219, 218);" >Patient Details</h3>
+                                            <br/>
+                                         
+                                            <div class="slds-grid slds-gutters slds-wrap">
+                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4 slds-p-bottom_small">
+                                                    <span >   Care {!v.listVital[0].Name}</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-bottom_small">
+                                                   
+                                                    <span >Date:</span><br/>
+													<lightning:input type="date" name="input1"  value="{!v.listVital[0].Date__c}" variant="label-hidden"  />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-bottom_small">
+                                                     <span >Quarantine Day:</span><br/>
+													 <lightning:input name="accName" type="text"  maxlength="250"  value="{!v.listVital[0].Quarantine_Day__c}"  variant="label-hidden"/>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4 slds-p-bottom_small">
+                                                    
+                                                </div>
+                                            </div>
+											
+											
+                                             
+										<hr class="slds-m-vertical_medium"/>	 
+											 
+                                   <!--  <div  class="slds-grid slds-gutters">
+                                        <div  class="slds-col slds-size_3-of-12">
+                                            <span style="font-weight:bold;">   </span>
+                                        </div>
+                                        <div  class="slds-col slds-size_3-of-12">
+                                          <span style="margin-left: 70px;">Morning</span>
+                                            
+                                        </div>
+                                        <div  class="slds-col slds-size_3-of-12">
+                                            <span style="margin-left: 90px;"><br/></span><span style="margin-left: 90px;">[Optional]</span>
+                                        </div>
+                                        <div  class="slds-col slds-size_3-of-12">
+                                          <span style="margin-left: 90px;">Evening</span>
+                                        </div>-->
+                                        <!-- <div  class="slds-col slds-size_3-of-12">
+                                    <lightning:input name="accName" type="text"  maxlength="250" label="" value="{!v.listVital[0].Isolation_Max_Home__r.Doctor__r.PersonMobilePhone}" />
+                                    
+                                    
+                                </div>-->
+                                   <!-- </div>-->
+								   <div class="main-grid">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                  <span style="visibility:hidden;"> Temperature (F) </span>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    
+                                                    <span > Morning</span>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    
+                                                    <span > Afternoon </span>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    <span >   Evening</span>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    <span >Temperature (F)</span>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    <lightning:input name="accName"   type="text"   maxlength="250" value="{!v.listVital[0].Temperature_0F__c}" variant = "label-hidden" />
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    <lightning:input name="accNumber"  type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Temperature_0F_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                    <lightning:input name="accPhone"   type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Temperature_0F_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            
+                                            <br/>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >  Pulse Rate (/ min) </span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Pulse_Rate_min__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Pulse_Rate_min_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Pulse_Rate_min_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >Respiratory Rate (/ min)</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Respiratory_Rate_min__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Respiratory_Rate_min_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Respiratory_Rate_min_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4"> 
+                                                    <span >O2Saturation (%)</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].O2Saturation__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].O2Saturation_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].O2Saturation_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4"> 
+                                                    <span >Blood Pressure (mm of Hg)</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_Pressure_mm_of_Hg__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text" maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_Pressure_mm_of_Hg_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_Pressure_mm_of_Hg_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >Blood sugar (mg/dl) if diabetic</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_sugar_mg_dl_if_diabetic__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_sugar_mg_dl_if_diabetic_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Blood_sugar_mg_dl_if_diabetic_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >Mask Change (8th hourly) </span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Mask_Change__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Mask_Change_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Mask_Change_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            
+                                            <br/>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >  Hand hygiene – washing hands with soap and water (frequency) </span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Hand_hygiene_washing_hands_with_soap__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Hand_hygiene_washing_hands_with_soap_2__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Hand_hygiene_washing_hands_with_soap_8__c}" />
+                                                </div>
+                                            </div><br/>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >  Fluid Intake(check for fluid intake) </span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Fluid_Intake_check_for_fluid_intake__c}" />
+                                                    
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Fluid_Intake_check_for_fluid_intake_2PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Fluid_Intake_check_for_fluid_intake_8PM__c}" />
+                                                </div>
+                                            </div><br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span > Urine Output ( frequency and adequate or not)</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Urine_Output_frequency__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Urine_Output_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Urine_Output_8_PM__c}" /> 
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span > Aspiration / Vomit </span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accName" type="text"  maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Aspiration__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accNumber" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Aspiration_Vomit_2_PM__c}" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <lightning:input name="accPhone" type="text"   maxlength="250" variant = "label-hidden" value="{!v.listVital[0].Aspiration_Vomit_8_PM__c}" />
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <span >  Developing symptoms of</span>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <!-- onclick="{!c.selectDeveloping}" -->
+                                                                <lightning:input type="checkbox"  Data-userinput="None8AM" name="options" aura:id="None8AM"     checked="{!v.listVital[0].None_of_the_Symptom_at_8_AM__c}" /><span >None</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox"> <!-- onclick="{!v.DevelopingCheckBox8AM}" -->
+                                                                <lightning:input type="checkbox"  name="options"  aura:id="Cold8AM"   checked="{!v.listVital[0].Cold_8_AM__c}" /><span >Cold</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox"  name="options"   aura:id="Cough8AM"    checked="{!v.listVital[0].Cough_8_AM__c}" /><span >Cough</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options"   aura:id="Sneezing8AM"   checked="{!v.listVital[0].Sneezing_8_AM__c}" /><span >Sneezing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox"  name="options"    aura:id="Headache8AM"   checked="{!v.listVital[0].Headache_8_AM__c}" /><span >Headache</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options"   aura:id="None2PM"    checked="{!v.listVital[0].None_of_the_Symptom_at_2_PM__c}" /><span >None</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options"     id="hypertension"    checked="{!v.listVital[0].Cold_2_PM__c}" /><span >Cold</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Cough_2_PM__c}" /><span >Cough</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Sneezing_2_PM__c}" /><span >Sneezing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Headache_2_PM__c}" /><span >Headache</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="slds-col slds-size_1-of-4">
+                                                             <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  aura:id="None8PM"   checked="{!v.listVital[0].None_of_the_Symptom_at_8_PM__c}" /><span >None</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options"   id="hypertension"    checked="{!v.listVital[0].Cold_8_PM__c}" /><span >Cold</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Cough_8_PM__c}" /><span >Cough</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Sneezing_8_PM__c}" /><span >Sneezing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"     checked="{!v.listVital[0].Headache_8_PM__c}" /><span >Headache</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-4">
+                                                     <span > Worsening of Symptomps  </span>
+													 <!--<br/>
+                                                    <span style="color: firebrick;">a) Difficulty in breathing</span><br/>
+                                                    <span style="color: firebrick;">b) Persistent pain/pressure in the chest</span><br/>
+                                                    <span style="color: firebrick;">c) Mental confusion or inability to arouse</span><br/>
+                                                    <span style="color: firebrick;">d) Developing bluish discoloration of lips/face</span>-->
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"    checked="{!v.listVital[0].Difficulty_in_Breathing_8_AM__c}" /><span >Difficulty in Breathing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"   checked="{!v.listVital[0].Persistent_Pain_8_AM__c}" /><span >Persistent Pain</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  checked="{!v.listVital[0].Mental_Confusion_8_AM__c}" /><span >Mental Confusion</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"   checked="{!v.listVital[0].Discolouration_Lips_Face_8_AM__c}" /><span >Discolouration of Lips/Face</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  checked="{!v.listVital[0].Difficulty_in_Breathing_2_PM__c}" /><span >Difficulty in Breathing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  checked="{!v.listVital[0].Persistent_Pain_2_PM__c}" /><span >Persistent Pain</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"    checked="{!v.listVital[0].Mental_Confusion_2_PM__c}" /><span >Mental Confusion</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"    checked="{!v.listVital[0].Discolouration_Lips_Face_2_PM__c}" /><span >Discolouration of Lips/Face</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-4">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"    checked="{!v.listVital[0].Difficulty_in_Breathing_8_PM__c}" /><span >Difficulty in Breathing</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  checked="{!v.listVital[0].Persistent_Pain_8_PM__c}" /><span >Persistent Pain</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"  checked="{!v.listVital[0].Mental_Confusion_8_PM__c}" /><span >Mental Confusion</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-checkbox">
+                                                                <lightning:input type="checkbox" name="options" id="hypertension"    checked="{!v.listVital[0].Discolouration_Lips_Face_8_PM__c}" /><span>Discolouration of Lips/Face</span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                
+                                            </div>
+                                           
+                                            
+                                            <br/>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col  slds-medium-size_1-of-4">
+                                                    <span >Any other family member</span><br/> 
+                                                    <span >developing any new Sign </span><br/>
+                                                   <span >&amp; Symptoms</span>
+                                                </div>
+                                                <div class="slds-col  slds-medium-size_1-of-4">
+                                                    <lightning:select aura:id="familySign"   value="{!v.listVital[0].Any_othr_family_mmbr_developing_any_8AM__c}"  onchange="{!c.handleFamilySymptompOnChange}">
+                                                        <option value="">--None--</option>
+                                                        <aura:iteration items="{!v.familyMemberSymptomps}" var="ind" indexVar="key">
+                                                            <option text="{!ind.value}" value="{!ind.key}"  />
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                  
+                                                </div>
+                                                <div class="slds-col slds-medium-size_1-of-4">
+                                                   
+                                                </div>
+                                            </div>
+											 </div>
+                                            <br/>
+                                            <br/>
+                                            <h3 class="slds-section-title--divider" style="background: rgb(221, 219, 218);" >Medication Chart</h3>
+                                            <br/>
+                                            <table class="main-grid" width="100%" border="1" style="border-collapse:collapse;">
+                                                <tr>
+                                                    <th height="40px" width="25%" style="text-align:center;">Sr No.
+                                                    </th>
+                                                    <th height="40px" width="75%" style="text-align:center;">Name of the Drug
+                                                    </th>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td height="30px" width="25%">1</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Cap_Zincovit__c}">
+                                                            Cap  Zincovit
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">2</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_HCQS__c}">
+                                                            Tab HCQS
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">3</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Cap_Uprise_D__c}">
+                                                            Cap Uprise D
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">4</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Pantocid__c}">
+                                                            Tab Pantocid
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">5</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Ivernectin__c}">
+                                                            Tab Ivernectin
+                                                            
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td> 
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">6</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Calpol_650_mg_SDS__c}">
+                                                            Tab Calpol(650 mg) SDS
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">7</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Vit_C__c}">
+                                                            Tab Vit C
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">8</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Irithromycin__c}">
+                                                            Tab Irithromycin
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">9</td>
+                                                    <td height="30px" width="75%">
+                                                        <aura:if isTrue="{!v.listPrescription[0].Tab_Azithromycin__c}">
+                                                            Tab Azithromycin
+                                                            
+                                                            
+                                                            <aura:set attribute="else">
+                                                                Null
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">10</td>
+                                                    <td height="30px" width="75%">
+                                                        Null
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">11</td>
+                                                    <td height="30px" width="75%">
+                                                        Null
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td height="30px" width="25%">12</td>
+                                                    <td height="30px" width="75%">
+                                                        Null
+                                                    </td>
+                                                </tr>
+                                                
+                                            </table>
+                                            <br></br>
+                                            <div class="slds-align_absolute-center slds-p-top_small">
+                                                <lightning:button  disabled="{!v.listVital[0].EnableRecord__c}" variant="brand" label="Verify" title="Brand action" onclick="{!c.save}" />
+                                            </div>
+                                            <br/>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </section>
+                    </aura:if>
+                </div>
+                
+                
+            </div>
+        </div>
+        
+    </article>
+    
+</aura:component>

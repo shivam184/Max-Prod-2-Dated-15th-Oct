@@ -1,0 +1,82 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" Controller="VILLinkageApex">
+    
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="selectedVIL" type="String" />
+    <aura:attribute name="vilrequestedList" type="List" />
+    <aura:attribute name="baseurl" type="String" />
+    <aura:attribute name="VilID" type="String" default=""/>
+    <aura:attribute name="Name" type="String" default=""/>
+    <aura:attribute name="button" type="Boolean" default="false"/>
+    <aura:attribute name="passNo" type="String" default=""/>
+    <aura:attribute name="hcf" type="String" default=""/>
+    <aura:attribute name="country" type="String" default=""/>
+    <aura:attribute name="location" type="String" default=""/>
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInIt}" />
+    <aura:handler name="change" value="{!v.selectedVIL}" action="{!c.handleVILChange}" />
+    
+    
+    
+    <div style="background-color:#fff;border-radius:5px;"> 
+        <div class="slds-section slds-is-open ">
+            <h3 class="slds-section__title">
+                <div class="slds-button slds-section__title-action" aria-expanded="true">
+                    <span class="slds-truncate" title="Section Title">VIL Update</span>
+                </div>
+            </h3>
+        </div>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-2">
+                <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                    <div class="slds-col slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <lightning:select name="VIL" label="VIL requested by partner" aura:id="vilID" value="{!v.selectedVIL}" disabled="{!if(v.VilID!='',true,false)}">
+                                <aura:iteration items="{!v.vilrequestedList}" var="option">
+                                    <option text="{!option}" value="{!option}"/>
+                                </aura:iteration>
+                            </lightning:select>	 
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <p>&nbsp;&nbsp;&nbsp;</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <div class="slds-form">
+                    <aura:if isTrue="{!v.VilID!=''}">
+                        <div class="slds-col slds-size_1-of-1">
+                            <div class="slds-form-element__control">
+                                <span style="padding-top:7px;">
+                                    <p>Please visit your VIL Detail</p>
+                                    <br/>
+                                    <a href="{!v.baseurl}" target="_blank">{!v.Name}</a>
+                                </span>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.button}">
+                        <div class="slds-col slds-size_1-of-1">
+                            <div class="slds-form-element__control">
+                                <p>Please create your Visa Invite</p>
+                                <span style="padding-top:7px;">
+                                    <lightning:button  variant="brand" label="Create Visa Invite" onclick="{!c.rediectToVIL}"/>
+                                </span>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <div class="slds-col slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <p>&nbsp;&nbsp;&nbsp;</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</aura:component>

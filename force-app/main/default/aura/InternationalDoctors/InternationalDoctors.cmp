@@ -1,0 +1,58 @@
+<aura:component implements="force:appHostable" controller="InternationalTagging_Controller">
+    <aura:HTML tag="style">
+        .slds-modal__container{
+        max-width:70rem !important;
+        width:90% !important;
+        }
+    </aura:HTML>
+    <aura:attribute name="selectedLeadId" type="String" default="" />
+    <aura:attribute name="selectedAdmissionId" type="String" default="" />
+    <aura:attribute name="selectedMecpSource" type="String" default="" />
+    <aura:attribute name="mecpName" type="String" />
+    <aura:attribute name="showMessage" type="Boolean" default="false" />
+    <aura:attribute name="firstBlockColumns" type="List"/>
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="showTable" type="Boolean" default="false" />
+    <aura:attribute name="retag" type="Boolean" default="false" />
+    <aura:registerEvent name="sampleEvent" type="c:UpdateInternationalTagging"/>
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <div>
+        <lightning:card>
+            <aura:if isTrue="{!v.showSpinner}">
+                <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+            </aura:if>
+            <aura:set attribute="title">
+            </aura:set>
+            <center>
+                <span style="display:none;color:red;" id="error1">Please select an HCF Source</span>
+            </center>
+            <div onkeyup="{!c.doGetMECPDoctorJS}">
+                <lightning:input type="text"  label="HCF Source" value="{!v.mecpName}" />
+            </div>
+            <aura:if isTrue="{!v.showMessage}">
+                <div class="slds-p-left_small" style="color:red;" >
+                        <br/>
+                        No HCF Source found.
+                    </div>
+                </aura:if>
+            <aura:if isTrue="{!v.showTable}" >
+                <c:LightningDataTable columns="{!v.firstBlockColumns}" data="{!v.data}" selectedMecpSource="{!v.selectedMecpSource}" tableType="Account"/>
+            </aura:if>
+            <aura:set attribute="footer">
+                <div class="slds-clearfix">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_right">
+                            <lightning:button label="Cancel" title="Cancel" onclick="{!c.handleCancel}" />
+                            <lightning:button variant="brand" label="Proceed" title="Save" onclick="{!c.handleProceed}" />
+                        </div>
+                    </div>
+                </div>
+            </aura:set>
+        </lightning:card>
+    </div>
+</aura:component>

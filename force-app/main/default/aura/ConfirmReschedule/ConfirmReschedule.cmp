@@ -1,0 +1,56 @@
+<aura:component controller="TodayPlanApexController">
+    
+    <aura:attribute name="showRescheduleComponent" type="Boolean" default="false"/>
+    <aura:attribute name="beatPlanDetailId" type="String" default=""/>
+    <aura:attribute name="rescheduleReason" type="String" default="" />
+    <aura:attribute name="rescheduleDate" type="Date" default="" />
+    <aura:attribute name="maxDate" type="Date" default="" />
+    <aura:attribute name="minDate" type="Date" default="" />
+    
+    <aura:handler name="change" value="{!v.showRescheduleComponent}" action="{!c.toggleDialog}" />
+    
+    <aura:registerEvent name="startDayEvent" type="c:ConfirmStartDayEvent" />
+    
+    <div aura:id="editDialog" role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal">
+        <lightning:spinner aura:id="spinner" variant="brand" class="slds-hide" />
+        <div class="slds-modal__container" style="height:auto;">
+            <div class="slds-modal__header">
+                <button class="slds-button slds-modal__close " title="Close" onclick="{!c.toggleDialog}">
+                    <lightning:icon iconName="utility:close" variant="bare" ></lightning:icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 class="slds-text-heading_medium">Reschedule Visit</h2>
+            </div>
+                  <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                
+                <center><lightning:input type="date" name="input1" label="Enter Reschedule Date" value="{!v.rescheduleDate}" max="{!v.maxDate}" min="{!v.minDate}"/></center>
+                
+            </div>
+            
+            <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                <center>
+                   <span style="display:none;color:red;" id="error1">Please Fill Reschedule Date</span>
+                </center>
+            </div> 
+            
+            <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                
+                <center><ui:inputTextArea label="Enter Reschedule Reason" value="{!v.rescheduleReason}" rows="2"/></center>
+                
+            </div>
+            
+            <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                <center>
+                   <span style="display:none;color:red;" id="error2">Please Fill Reschedule Reason</span>
+                </center>
+            </div>   
+            
+            
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" onclick="{!c.toggleDialog}">Cancel</button>
+                <button class="slds-button slds-button_brand" onclick="{!c.confirmReschedule}">Proceed</button>
+            </div>
+        </div>
+    </div>
+    <div aura:id="overlay" class="slds-backdrop"></div>
+</aura:component>

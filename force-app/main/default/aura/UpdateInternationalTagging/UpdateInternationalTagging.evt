@@ -1,0 +1,5 @@
+<aura:event type="APPLICATION" description="Event template" >
+    <aura:attribute name="selectedAck" type="String"/>
+    <aura:attribute name="selectedLead" type="String"/>
+    <aura:attribute name="selectedDoctor" type="String"/>
+</aura:event>

@@ -1,0 +1,70 @@
+<aura:component implements="flexipage:availableForAllPageTypes">
+    
+    <aura:attribute name="listTransactions" type="List" /> 
+    
+    
+    <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" role="grid">
+        <thead>
+            <tr class="slds-line-height_reset">
+                 <th scope="row" class="slds-is-resizable slds-is-sortable" tabindex="0">
+                          <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate bldCls" title="Confidence">Date</span>
+                    </div>
+                     </a>
+                </th>
+                 <th scope="row" class="slds-is-resizable slds-is-sortable" tabindex="0">
+                          <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate bldCls" style="text-align:center;" title="Center">
+                            Center
+                        </span>
+                    </div>
+                     </a>
+                </th>
+                <!--<th aria-label="Contact" aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                            <span class="slds-truncate bldCls" style="text-align:center;" title="Contact">Test Info</span>
+                        </div>
+                    </a> 
+                </th> -->
+                <th aria-label="Contact" aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                        <span class="slds-assistive-text">Sort by: </span>
+                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                            <span class="slds-truncate bldCls" title="Contact">Amount</span>
+                            
+                        </div>
+                    </a> 
+                </th> 
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.listTransactions}" var="option">
+                <tr aria-selected="false" class="slds-hint-parent">
+                     <th scope="row" class="slds-is-resizable slds-is-sortable" tabindex="0">
+                         <div class="slds-truncate cls">
+                             <lightning:formattedDateTime value="{!option.Billing_Date_Time__c}"/>
+                         </div>
+                    </th>
+                    <td role="gridcell">
+                        <div class="slds-truncate cls" >
+                            <div class="slds-truncate cls">{!option.Centre_Name__c}</div>
+                        </div>
+                    </td>
+                    <!--<td role="gridcell">
+                        <div class="slds-truncate cls" >
+                            <lightning:formattedDateTime value="{!option.Billing_Date_Time__c}"/>
+                        </div>
+                    </td> -->
+                    <td role="gridcell">
+                        <div class="slds-truncate cls">{!option.Net_Amount__c}</div>
+                    </td> 
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    
+    
+</aura:component>

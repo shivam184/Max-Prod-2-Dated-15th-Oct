@@ -1,0 +1,166 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" access="global" controller="AddFamilyMemberApexonboarding" >
+    
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 55%;
+        width: 55% !important;
+        height: 100% !important;
+        }
+    </aura:html>
+    
+    
+    <aura:attribute name="isDesktop" type="Boolean" default="true" />
+    <aura:attribute name="activeSections" type="String[]" default="['PersonalInformation']" />
+    <aura:attribute name="lead" type="Lead__c" default="{'sobjectType':'Lead__c','Stage__c':'New'}" />
+    
+    
+    <aura:attribute name="leadPassport" type="String"/>
+    <aura:attribute name="patietnWrapper" type="Object"/>
+    <aura:attribute name="errorMsg" type="String"/>
+    <aura:attribute name="sucessMsg" type="String"/>
+    
+    <aura:attribute name="listGender" type="List" /> 
+    <aura:attribute name="listOccupation" type="List"/>
+     <aura:attribute name="listVisitedToMaxHospital" type="List"/> 
+
+    
+    <aura:attribute name="isStop" type="Boolean" default="true"/> 
+    
+    <aura:attribute name="referToMax" type="Boolean" default="false" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+   <!-- <aura:handler name="change" value="{!v.lead.Passport_No__c}" action="{!c.doCheckMobileNumber}" /> -->
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    
+    
+  <!--  <aura:if isTrue="{!v.showFamilyMemberComponent}">  -->
+        <lightning:card title="Add Member" iconName="utility:user">
+            <aura:if isTrue="{!v.showSpinner}">
+                <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+            </aura:if>
+            <aura:set attribute="actions">
+                <aura:if isTrue="{!v.isDesktop}">
+                    <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                    <lightning:button label="Save" accesskey="save" variant="brand" onclick="{!c.doSave}"/>
+                </aura:if>
+            </aura:set>
+            <aura:set attribute="footer" >
+                <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                <lightning:button label="Save" variant="brand" accesskey="save" onclick="{!c.doSave}"/>
+            </aura:set>
+            
+            <aura:if isTrue="{!v.errorMsg.length>0}">
+                <ui:message title="Error" severity="error" closable="false">
+                    {!v.errorMsg}
+                </ui:message>
+            </aura:if>
+            <aura:if isTrue="{!v.sucessMsg.length>0}">
+                <ui:message title="Success" severity="confirm" closable="true">
+                    {!v.sucessMsg}
+                </ui:message>
+            </aura:if>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" aura:id="accord" activeSectionName="{!v.activeSections}" >
+                <lightning:accordionSection name="PersonalInformation" label="Personal Information" >
+                    <aura:set attribute="body">
+                        <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input type="tel"  aura:id="Passport" label="Passport No" value="{!v.lead.Passport_No__c}" onblur="{!c.doCheckMobileNumber}" required="true" messageWhenValueMissing="Field is required" />  
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input type="tel" maxlength="10"  aura:id="mobile" label="Mobile Number" value="{!v.lead.Mobile_Phone__c}"    required="true" messageWhenValueMissing="Field is required" />  
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                                <lightning:input type="checkbox"  label="Existing Member" checked="{!v.patietnWrapper.isExisiting}" disabled="true"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                                <lightning:input type="checkbox" aura:id="newContact" checked="{!v.patietnWrapper.isNewPat}" label="New Contact" disabled="true"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Max Id" value="{!v.lead.Max_ID__c}" disabled="false"/> 
+                            </div> 
+                            
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input aura:id="firstName"  messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="First Name"  value="{!v.lead.First_Name__c}"  required="true" messageWhenValueMissing="Field is required"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input aura:id="mname" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="Middle Name"  value="{!v.lead.Middle_Name__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  aura:id="surName" label="Last Name" value="{!v.lead.Last_Name__c}" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" required="true" messageWhenValueMissing="Field is required"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:select name="gender" label="Gender"  aura:id="gender" value="{!v.lead.Gender__c}" required="true" messageWhenValueMissing="Field is required">
+                                    <option value="">-- None --</option>
+                                    <aura:iteration items="{!v.listGender}" var="option">
+                                        <option text="{!option}" value="{!option}"/>
+                                    </aura:iteration>
+                                    
+                                </lightning:select>   
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input type="Date" aura:id="dob" value="{!v.lead.DOB__c}" label="Date Of Birth" placeholder="dd/mm/yyyy" onchange="{!c.handleChangeDob}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input required="true" type="number" value="{!v.lead.CMP_Age__c}" messageWhenValueMissing="Field is required" messageWhenRangeOverflow="Invalid age" messageWhenRangeUnderflow="Age cannot be less than 55 for Citizen Plus" max="99" aura:id="Age" label="Age" onkeyup="{!c.handleChangeAge}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Email ID"  type="email" value="{!v.lead.Email__c}"  messageWhenTypeMismatch="Invalid Email ID"/>  
+                            </div>  
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:select name="Visited Max Hospital" label="Visited Max Hospital" aura:id="VisitedMaxHospital" value="{!v.lead.Visited_Max_Hospital__c}">
+                                    <option value="">-- None --</option>
+                                    <aura:iteration items="{!v.listVisitedToMaxHospital}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    
+                                </lightning:select>   
+                            </div>
+                            
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="House No" type="text"  value="{!v.lead.House_No__c}"/>  
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Street" type="text"   value="{!v.lead.Street__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Medical History" type="text" value="{!v.lead.Other_Medical_Conditions__c}"/>  
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:select   label="Occupation" aura:id="presentOccupation" value="{!v.lead.Present_Occupation__c}">
+                                    <option value="">-- None --</option>
+                                        <aura:iteration items="{!v.listOccupation}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                </lightning:select>   
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Address"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  aura:id="city" label="City" value="{!v.lead.City__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  label="Pin Code" type="tel" maxlength="6" aura:id="pin" value="{!v.lead.ZIP_Postal_Code__c}"/>  
+                            </div> 
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input   label="Locality" value="{!v.lead.Locality__c}"/>  
+                            </div> 
+                            
+                            <div class="slds-col slds-size_1-of-1 slds-p-top--small">
+                                <lightning:input type="checkbox" label="Refer To Max" checked="{!v.referToMax}" disabled="True"/>  
+                            </div>
+                        </div>
+                    </aura:set>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        </lightning:card>
+</aura:component>

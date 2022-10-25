@@ -1,0 +1,31 @@
+@media(max-width:768px){
+.THIS .slds-modal__container{
+        margin:0px !important;
+        padding:0px !important;
+}
+.THIS .main-grid , .THIS .slds-table{
+        font-size:13px !important;
+        line-height:16px;
+    }
+.THIS .slds-form-element, .THIS .cPatientList .main-grid, .cPatientList .slds-table{
+        font-size:10px !important;
+        line-height:12px;
+    }
+    .THIS .slds-form-element .slds-checkbox [type="checkbox"] + .slds-checkbox__label .slds-checkbox_faux{
+        margin-right:0px !important;
+    }
+    .THIS .slds-modal__close{
+        top:0px;
+        right:0px;
+        background-color:#ff8905;
+        width:16px;
+        height:16px;
+        border-radius:0px;
+        padding:3px;
+        font-size:11px;
+    }
+    .THIS #modal-heading-01{font-size:16px;}
+    }
+
+.THIS [lightning-input_input-host] {display:inline-block;}
+.THIS .slds-form-element{margin-bottom:5px;}

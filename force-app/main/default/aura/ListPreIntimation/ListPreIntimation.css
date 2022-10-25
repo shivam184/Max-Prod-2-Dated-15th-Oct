@@ -1,0 +1,10 @@
+.THIS .redirectlink:hover {
+    cursor:pointer;
+}
+.THIS .redirectlink{
+    color:rgb(52,152,219);
+}
+
+.THIS.scrollerSize{
+    height:600px;
+}

@@ -1,0 +1,17 @@
+<apex:page showHeader="false" sidebar="false"> 
+    <apex:includeLightning />
+
+    <div id="lightning" />
+
+    <script>
+        $Lightning.use("c:ACDFormApp", function() {
+          $Lightning.createComponent("c:ACDForm",
+              {},
+              "lightning",
+              function(cmp) {
+                
+              }
+          );
+        });
+    </script>
+</apex:page>

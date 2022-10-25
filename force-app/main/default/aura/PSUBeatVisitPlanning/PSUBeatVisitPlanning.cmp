@@ -1,0 +1,266 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" controller="PSUBeatVisitPlanningApex">
+    
+    <aura:attribute name="today" type="Date" />
+    <aura:attribute name="lastDate" type="Date" />
+    <aura:attribute name="nextMonthName" type="String" />
+    <aura:attribute name="year" type="String" />
+    <aura:attribute name="isDesktop" type="Boolean" default="true" />
+    <aura:attribute name="listAccount" type="list" />
+    <aura:attribute name="listContact" type="list" />
+    <aura:attribute name="checkAccount" type="Boolean" default="true" />
+    <aura:attribute name="checkContact" type="Boolean" default="true" />
+    <aura:attribute name="Self" type="Boolean" default="true" />
+    <aura:attribute name="Others" type="Boolean" default="false" />
+    <aura:attribute name="searchName" type="String" default="" />
+    <aura:attribute name="selectedSpeciality" type="String" default="" />
+    <aura:attribute name="selectedTerritory" type="String" default="" />
+     <aura:attribute name="account" type="Account" default="{ 'sobjectType': 'Account' }"/>
+           
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <lightning:spinner aura:id="spinner" variant="brand" class="slds-hide" />
+    
+    
+    <lightning:card title="PLAN YOUR MONTHLY VISITS" iconName="standard:location">
+        
+        <aura:set attribute="actions">
+            <aura:if isTrue="{!v.isDesktop}">
+                <lightning:buttonGroup>
+                    <lightning:button label="Cancel" onclick="{!c.sobjectHome}"/>
+                    <lightning:button label="Save" variant="brand" onclick="{!c.createBeatDetails}" />
+                    <lightning:button label="Search" variant="brand" onclick="{!c.doSearch}" />
+                    <lightning:button label="Re-Schedule" variant="brand" onclick="{!c.doReschedule}" />
+                </lightning:buttonGroup>
+            </aura:if>
+        </aura:set>
+        
+        <aura:if isTrue="{!v.isDesktop}">
+            <div class="slds-p-horizontal_large">
+                <div class="slds-p-horizontal_large">
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-5">
+                            <lightning:input label="Visit Date" value="{!v.today}" type="Date" min="{!v.today}" max="{!v.lastDate}"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-5">
+                            <lightning:input label="Name" input="text" value="{!v.searchName}"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-5">
+                            <c:strike_lookup label="Territory" object="PSU_Corporate_Territory__c" searchField="Name" value="{!v.selectedTerritory}"
+                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                             errorMessage="Invalid input" showRecentRecords="true" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-5">
+                           <!-- <c:strike_lookup label="Speciality" object="Speciality__c" searchField="Name" value="{!v.selectedSpeciality}"
+                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                             errorMessage="Invalid input" showRecentRecords="true" />  -->
+
+                            Account Chanel  <force:inputField value="{!v.account.Account_Channel__c}"/>
+
+                                                     
+                        </div>
+                        <div class="slds-col slds-size_1-of-15 slds-p-top_medium"> 
+                            <lightning:input label="Self" type="checkbox" checked="{!v.Self}" onchange="{!c.doSearch}"/>
+                            
+                            <lightning:input label="Others" type="checkbox" checked="{!v.Others}" onchange="{!c.doSearch}"/>
+                        
+                        </div>
+                        <div class="slds-col slds-size_1-of-5 slds-p-top_medium" >
+                            <lightning:input label="Account" type="checkbox" checked="{!v.checkAccount}" onchange="{!c.doSearch}"/>
+                            
+                            <lightning:input label="Contact" type="checkbox" checked="{!v.checkContact}" onchange="{!c.doSearch}"/>
+                        </div> 
+                        
+                       
+                    </div>
+                </div> 
+                
+                
+                <div class="slds-p-top_large"/>
+                <div class="slds-p-horizontal_medium" style="height: 350px;margin-bottom:1%;overflow-y:scroll; width:100%;">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="pad wid" scope="col">
+                                    <div class="slds-truncate" title="Select">SELECT</div>
+                                </th>
+                                <th class="pad" scope="col">
+                                    <div class="slds-truncate" title="Doctor Name">DOCTOR NAME</div>
+                                </th>
+                                <th class="pad" scope="col">
+                                    <div class="slds-truncate" title="Phone">PHONE</div>
+                                </th>
+                                <th class="pad" scope="col">
+                                    <div class="slds-truncate" title="Address">ADDRESS</div>
+                                </th>
+                                <th class="pad" scope="col">
+                                        <div class="slds-truncate" title="Speciality">SPECIALITY</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.listAccount}" var="item" >
+                                <tr class="slds-hint-parent">
+                                    <th data-label="Select" scope="row">
+                                        <div class="slds-truncate" title="Select"><lightning:input type="checkbox" checked="{!item.isSelected}" /></div>
+                                    </th>
+                                    <td data-label="Doctor Name">
+                                        <div class="slds-truncate" title="Doctor Name"><a onclick="{!c.redirectToDoc}" data-selid="{!item.acc.Id}">{!item.acc.Name}</a></div>
+                                    </td>
+                                    <td data-label="Phone">
+                                        <div class="slds-truncate" title="Phone">{!item.acc.Phone}</div>
+                                    </td>
+                                    <td data-label="Address">
+                                        <div class="slds-truncate" title="Address">{!item.acc.Address_From_Geolocation__c}</div>
+                                    </td>
+                                    <td data-label="Speciality">
+                                        <div class="slds-truncate" title="isSelected">{!item.acc.SF_Speciality__r.Name}</div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                            <aura:iteration items="{!v.listContact}" var="item" >
+                                <tr class="slds-hint-parent">
+                                    <th data-label="Select" scope="row">
+                                        <div class="slds-truncate" title="Select"><lightning:input type="checkbox" checked="{!item.isSelected}" /></div>
+                                    </th>
+                                    <td data-label="Doctor Name">
+                                        <div class="slds-truncate" title="Doctor Name"><a onclick="{!c.redirectToDoc}" data-selid="{!item.con.Id}">{!item.con.Name}</a></div>
+                                    </td>
+                                    <td data-label="Phone">
+                                        <div class="slds-truncate" title="Phone">{!item.con.MobilePhone}</div>
+                                    </td>
+                                    <td data-label="Address">
+                                        <div class="slds-truncate" title="Address"></div>
+                                    </td>
+                                    <td data-label="Speciality">
+                                        <div class="slds-truncate" title="Speciality"></div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!!v.isDesktop}">
+            <div class="slds-p-horizontal_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input label="Visit Date" value="{!v.today}" type="Date" min="{!v.today}" max="{!v.lastDate}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-p-horizontal_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-1">
+                        <c:strike_lookup label="Territory" object="PSU_Corporate_Territory__c" searchField="Name" value="{!v.selectedTerritory}"
+                                         iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                         errorMessage="Invalid input" showRecentRecords="true" /> 
+                        
+                      <!--  Account Chanel  <force:inputField value="{!v.account.Account_Channel__c}"/> -->
+                    </div>
+                </div>
+            </div>
+             <div class="slds-p-horizontal_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-1">
+                     <!--   <c:strike_lookup label="Speciality" object="Speciality__c" searchField="Name" value="{!v.selectedSpeciality}"
+                                         iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                         errorMessage="Invalid input" showRecentRecords="true" /> -->
+                         Account Chanel  <force:inputField value="{!v.account.Account_Channel__c}"/>
+
+                    </div>
+                </div>
+            </div> 
+            <div class="slds-p-horizontal_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input label="Name" value="{!v.searchName}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-p-horizontal_medium">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:input label="Account" type="checkbox" checked="{!v.checkAccount}" onchange="{!c.doSearch}"/>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:input label="Contact" type="checkbox" checked="{!v.checkContact}" onchange="{!c.doSearch}"/>
+                    </div>
+                </div>
+                <div class="slds-grid slds-gutters">  
+                    <div class="slds-col slds-size_1-of-2">                       
+                        <lightning:input label="Self" type="checkbox" checked="{!v.Self}" onchange="{!c.doSearch}"/>
+                    </div> 
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:input label="Others" type="checkbox" checked="{!v.Others}" onchange="{!c.doSearch}"/>
+                    </div>
+              </div> 
+            </div>
+            
+            <div class="slds-p-horizontal_medium slds-p-top_small">
+                <lightning:buttonGroup class="widt">
+                    <lightning:button label="Cancel" onclick="{!c.sobjectHome}" class="widt"/>
+                    <lightning:button label="Search" variant="brand" onclick="{!c.doSearch}" class="widt"/>
+                </lightning:buttonGroup>
+            </div>
+            
+            <div class="slds-p-horizontal_medium slds-p-top_small">
+                <lightning:buttonGroup class="widt">
+                    <lightning:button label="Save" onclick="{!c.createBeatDetails}" class="widt"/>
+                    <lightning:button label="Re-Schedule" variant="brand" onclick="{!c.doReschedule}" class="widt"/>
+                </lightning:buttonGroup>
+            </div>
+            
+            
+            <br/>
+           <!-- <div class="slds-p-horizontal_medium" style="height:300px;margin-bottom:1%;overflow-y:scroll; width:100%;">-->
+                <aura:iteration items="{!v.listAccount}" var="item">
+                    <div class="custom-box">
+                        <p>
+                            <lightning:input type="checkbox" name="input1" checked="{!item.isSelected}"/> 
+                        </p>
+                        <p><b>Doctor Name: </b> {!item.acc.Name}</p>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <ul>
+                                    <li>• Phone: {!item.acc.PersonMobilePhone} </li>
+                                    <li>• Address: {!item.acc.Address_From_Geolocation__c}</li>
+                                    <li>• Speciality: {!item.acc.SF_Speciality__r.Name}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </aura:iteration>
+                <aura:iteration items="{!v.listContact}" var="item">
+                    <div class="custom-box">
+                        <p>
+                            <lightning:input type="checkbox" name="input1" checked="{!item.isSelected}"/> 
+                        </p>
+                        <p><b>Contact Name: </b> {!item.con.Name}</p>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <ul>
+                                    <li>• Phone: {!item.con.MobilePhone} </li>
+                                    <!--<li>• Address: Testing</li>
+                                    <li>• Speciality: Testing</li>-->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </aura:iteration>
+           <!-- </div>-->
+        </aura:if>
+        
+        
+        <aura:set attribute="footer">
+            <aura:if isTrue="{!v.isDesktop}" >
+            <lightning:button label="Cancel" onclick="{!c.sobjectHome}"/>
+            <lightning:button label="Save" variant="brand" onclick="{!c.createBeatDetails}"/>
+            <lightning:button label="Search" variant="brand" onclick="{!c.doSearch}" />
+            <lightning:button label="Re-Schedule" variant="brand" onclick="{!c.doReschedule}" />
+            </aura:if>
+        </aura:set>
+        
+    </lightning:card>
+</aura:component>

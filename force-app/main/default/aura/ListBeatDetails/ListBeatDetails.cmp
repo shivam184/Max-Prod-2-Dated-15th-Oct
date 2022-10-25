@@ -1,0 +1,59 @@
+<aura:component controller="ListBeatDetailsApex">
+    
+    <aura:attribute name="todayDate" type="Date" default=""/>
+    <aura:attribute name="minDate" type="Date" default=""/>
+    <aura:attribute name="listBeatPlanDetails" type="List" default="" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:spinner aura:id="mySpinner" size="medium" variant="brand" class="slds-hide" />
+    
+    <lightning:card title="Meetings" iconName="standard:account" >
+        <aura:set attribute="actions" >
+            <lightning:input type="date" name="dateInput" label="Select Date" value="{!v.todayDate}" min="{!v.minDate}" onchange="{!c.doInit}" />
+        </aura:set>
+        
+        <aura:if isTrue="{!v.listBeatPlanDetails.length > 0}">
+            <aura:set attribute="else">
+                <div class="slds-p-left_small" style="color:red;">
+                    No Meetings Found
+                </div>
+            </aura:set>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Name">Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Status">Status</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Date">Date of Visit</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.listBeatPlanDetails}" var="item">
+                        <tr class="slds-hint-parent">
+                            <th data-label="Name" scope="row">
+                                <div class="slds-grow slds-cell-wrap" title="Name">
+                                   <!-- <lightning:formattedUrl value="{!'/lightning/r/Beat_Plan_Detail__c/'+item.Id+'/view'}"  label="{!if(item.Account__c != NULL,item.Account__r.Name,item.Contact__r.Name)}" target="_blank" />-->
+                                
+                                    <div onclick="{!c.openInNewtab}" class="redirectlink" id="{!item.Id}">{!if(item.Account__c != NULL,item.Account__r.Name,item.Contact__r.Name)}</div>
+                                </div>
+                            </th>
+                            <td data-label="Status">
+                                <div class="slds-grow slds-cell-wrap" title="Status">{!item.Status__c}</div>
+                            </td>
+                            <td data-label="Date of Visit">
+                                <div class="slds-grow slds-cell-wrap" title="Date of Visit">{!item.Expected_Date_of_Visit__c}</div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </aura:if>
+    </lightning:card>
+    
+</aura:component>

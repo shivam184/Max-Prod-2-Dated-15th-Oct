@@ -1,0 +1,73 @@
+<aura:component controller="MaxLabcallcenterApexController1">
+    <aura:attribute name="mobileNo" type="String" />
+    <aura:attribute name="callingMobileNo" type="String" />
+    <aura:attribute name="selectedValue" type="String"/>
+    <aura:attribute name="smsNumber" type="String" />
+    <aura:attribute name="param" type="String" />
+    <aura:attribute name="listPatient" type="List" default="{}"/>
+    <aura:attribute name="listPatientAlternate" type="List" default="{}"/>
+    <aura:attribute name="listCallDetails" type="List" default="{}"/>
+    <aura:attribute name="isProceed" type="Boolean" default="false" />
+    <aura:attribute name="noMobile" type="Boolean" default="false" />
+    <aura:attribute name="isPhoneSearch" type="Boolean" default="true" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner aura:id="mySpinner" size="medium" variant="brand" />
+    </aura:if>
+    <aura:if isTrue="{!v.noMobile}">
+        <c:PageHeader pageHeader="No Mobile Number Found" iconName="custom:custom110"/>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.isProceed}">
+        <aura:if isTrue="{!v.selectedValue.length==0}">
+            <c:MAXLABCALL mobileNo="{!v.mobileNo}" callingMobileNo="{!v.mobileNo}"/>
+            <aura:set attribute="else">
+        		<c:MAXLABCALL mobileNo="{!v.mobileNo}" callingMobileNo="{!v.mobileNo}" selectedMaxId="{!v.selectedValue}"/>
+            </aura:set>
+        </aura:if>
+        <aura:set attribute="else">
+            <aura:if isTrue="{!!v.noMobile}">
+                <aura:if isTrue="{!v.listPatient.length>0}">
+                    <c:PageHeader pageHeader="Dispose Your Call" iconName="action:call"/>
+                    <lightning:card title="Patient Details" iconName="standard:account" footer=" ">
+                        <div class="slds-p-left_small">
+                            
+                            <!-- This code is run when one Patient Record found-->
+                            <aura:if isTrue="{!v.listPatient.length==1}">
+                                <h2><b>Patient Name : </b> {!v.listPatient[0].Salutation}{!v.listPatient[0].Name}<br/>
+                                    <b>Personal Mobile No. : </b> {!v.listPatient[0].PersonMobilePhone}<br/>
+                                    <b>Max Id : </b>{!v.listPatient[0].Max_ID__c}<br/></h2>
+                            </aura:if>
+                            
+                            <!-- This code is run when multiple Patient's Record found-->
+                            <aura:if isTrue="{!v.listPatientAlternate.length>1}">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <lightning:select aura:id="patientList" name="Max Id - Patient Name" label="Max ID - Patient Name" required="true" onchange="{!c.handleChange}" messageWhenValueMissing="Select Max Id - Patient Name">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.listPatientAlternate}" var="patient" indexVar="key">
+                                                <option text="{!patient.Max_ID__c+'-'+patient.Name}" value="{!patient.Max_ID__c}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                </div>
+                            </aura:if>
+                            <br/><br/>
+                        </div>
+                        <div class="slds-align_absolute-center">
+                            <lightning:button label="Proceed" iconName="utility:forward" variant="brand" onclick="{!c.doProceed}"/>
+                            <!--<lightning:button label="Save &amp; New" iconName="utility:redo" variant="brand" onclick="{!c.saveData}"/>-->
+                        </div>
+                    </lightning:card>
+                    
+                    <!-- This code is run when new Patient call-->
+                    <aura:set attribute="else">
+                        <c:MAXLABCALL mobileNo="{!v.mobileNo}" callingMobileNo="{!v.mobileNo}"/>
+                    </aura:set>
+                </aura:if>
+            </aura:if>
+        </aura:set>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,555 @@
+<aura:component implements="force:hasRecordId,force:appHostable,flexipage:availableForAllPageTypes" controller="CallCenterDisposalApexController" access="global">
+    
+    <aura:HTML tag="style">
+        .fullNameStar > label::before{
+        content:"* " !important;
+        color:rgb(198,57,111) !important;
+        }
+    </aura:HTML>
+    
+    <aura:attribute name="mobileNo" type="String" />
+    <aura:attribute name="callingMobileNo" type="String" />
+    <aura:attribute name="smsNumber" type="String" />
+    <aura:attribute name="UserID" type="String" />
+     <aura:attribute name="UserName" type="String" />
+     <aura:attribute name="UniqueID" type="String" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="listPatient" type="List" />
+    <aura:attribute name="listPatientAlternate" type="List" />
+    <aura:attribute name="maxId" type="String" />
+    <aura:attribute name="selectedMaxId" type="String" />
+    <aura:attribute name="isPhoneSearch" type="Boolean" default="true" />
+    <aura:attribute name="contactName" type="String" default=""/>
+    <aura:attribute name="contactSalutation" type="String" default=""/>
+    <aura:attribute name="contactAge" type="String" default="" />
+    <aura:attribute name="contactGender" type="String" default="" />
+    <aura:attribute name="contactEmail" type="String" default="" />
+    <aura:attribute name="contactAlternateNumber" type="Integer"/>
+    <aura:attribute name="listCallDetails" type="List" />
+    <aura:attribute name="probability" type="Integer" />
+    <aura:attribute name="listTransactions" type="List" />
+    <aura:attribute name="preferredChannel" type="String"/>
+    <aura:attribute name="mapCallTypeToService" type="Map" default="{}"/>
+    <aura:attribute name="mapAppTypeToSource" type="Map" default="{}"/>
+    <aura:attribute name="mapReason" type="Map" default="{}"/>
+    <aura:attribute name="mapServiceToSubService" type="Map" default="{}"/>
+    <aura:attribute name="selectedCallType" type="String" />
+    <aura:attribute name="listMapKeys" type="List" />
+    <aura:attribute name="serviceTypeList" type="List" />
+    <aura:attribute name="selectedService" type="String" />
+    <aura:attribute name="selectedLocationId" type="String" />
+    <aura:attribute name="selectedCountryId" type="String" />
+    <aura:attribute name="disconnectionType" type="String" />
+    <aura:attribute name="remarks" type="String" />
+    <aura:attribute name="callBack" type="String" />
+    <aura:attribute name="selectedStatus" type="String" />
+    <aura:attribute name="selectedSource" type="String" />
+    <aura:attribute name="transferLevel" type="String" />
+    <aura:attribute name="listTransferLevel" type="List" />
+    <aura:attribute name="listStatus" type="List" />
+    <aura:attribute name="listSource" type="List" />
+    <aura:attribute name="selectedChannel" type="String" />
+    <aura:attribute name="listChannel" type="List" />
+    <aura:attribute name="selectedAppointment" type="String" />
+    <aura:attribute name="listAppointment" type="List" />
+    <aura:attribute name="selectedDoctorId" type="String" />
+    <aura:attribute name="selectedSpeciality" type="String" />
+    <aura:attribute name="selectedSourceAppointment" type="String" />
+    <aura:attribute name="listSourceAppointment" type="List" />
+    <aura:attribute name="selectedReason" type="String" />
+    <aura:attribute name="listReason" type="List" />
+    <aura:attribute name="selectedSubService" type="String" />
+    <aura:attribute name="listSubService" type="List" />
+    <aura:attribute name="noMobile" type="Boolean" default="false" />
+    <aura:attribute name="conversionProbability" type="Integer" />
+    <aura:attribute name="sucessMsg" type="String" default="" />
+    <aura:attribute name="errorMsg" type="String" default="" />
+    <aura:attribute name="listSalutation" type="List" />
+    <aura:attribute name="listGender" type="List" />
+    <aura:attribute name="options" type="List" default="[{'label': 'Mobile Number', 'value': 'phoneSearch'},{'label': 'Max ID', 'value': 'maxIdSearch'}]"/>
+    <aura:attribute name="value" type="String" default="phoneSearch"/>
+    <aura:attribute name="docSpeciality" type="String" default="" />
+    <aura:attribute name="ltngCurrTime" type="String" default="00:00:00"/>
+    <aura:attribute name="listDisconnectionType" type="List" />
+    <aura:attribute name="valueSublabel" type="String" description="String value that holds the subtitleField of the selected record" access="global"/>
+    <aura:attribute name="sendSMS" type="Boolean" default="false" />
+    <aura:attribute name="param" type="String" />
+    <aura:attribute name="showPage" type="Boolean" default="false" />
+    <aura:attribute name="newContact" type="Boolean" default="false" />
+    <aura:attribute name="currentTime" type="String" /> 
+    
+    <aura:attribute name="hideSave" type="boolean" default="false"/>
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.selectedLocationId}" action="{!c.chngeLocationSpan}" />
+    
+    <aura:registerEvent name="sampleCloseWindow" type="c:CloseWindow"/>
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner aura:id="mySpinner" size="medium" variant="brand" />
+    </aura:if>
+    <aura:if isTrue="{!v.noMobile}">
+        <c:PageHeader pageHeader="No Mobile Number Found" iconName="custom:custom110"/>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.sucessMsg.length>0}">
+        <ui:message title="Confirmation" severity="confirm" closable="true">
+            {!v.sucessMsg}
+        </ui:message>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.errorMsg.length>0}">
+        <ui:message title="Error" severity="error" closable="true">
+            {!v.errorMsg}
+        </ui:message>
+    </aura:if>
+    
+    
+    
+    
+    <aura:if isTrue="{!!v.noMobile}">
+        <c:PageHeader pageHeader="Dispose Your Call" iconName="action:call"/>
+        <aura:if isTrue="{!v.showPage}">
+            <div style="background-image: url('https://bnlschoolpictures.com/wp-content/uploads/2016/08/259-1080x1350.jpg')">
+                <div class="slds-p-top_medium"/>
+                <div class="slds-p-horizontal_large">
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_3-of-12">
+                            <lightning:card title="Last Five Call Details" iconName="standard:timesheet_entry" footer=" ">
+                                <aura:if isTrue="{!v.listCallDetails.length > 0}">
+                                    <c:CallDetailsCmp listCallDetails="{!v.listCallDetails}"/>
+                                    <aura:set attribute="else">
+                                        <div class="slds-p-left_small" style="color:red">
+                                            No Records Found
+                                        </div>
+                                    </aura:set>
+                                </aura:if>
+                            </lightning:card>
+                            <lightning:card title="Appoinment Booking Probability">
+                                <div class="slds-p-horizontal_medium">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                                            <span class="probab">{!v.probability} %</span>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                                            <div class="slds-box" style="{!v.probability > 70 ? 'background:MediumSeaGreen' : v.probability > 50 ? 'background:#ffff1a' : 'background:#ff4d4d'}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </lightning:card>
+                            <lightning:card title="Appoinment Conversion Probability">
+                                <div class="slds-p-horizontal_medium">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                                            <span class="probab">{!v.conversionProbability} %</span>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                                            <div class="slds-box" style="{!v.conversionProbability > 70 ? 'background:MediumSeaGreen' : v.conversionProbability > 50 ? 'background:#ffff1a' : 'background:#ff4d4d'}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </lightning:card>
+                            
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning:card title="Fill in the details below" iconName="standard:client" >
+                                <hr style="margin: 1rem 0;"/>
+                                
+                                <div class="slds-p-horizontal_medium">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-1">
+                                            <lightning:input label="Calling Number" value="{!v.callingMobileNo}" disabled="true"/>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    
+                                    <div class="slds-media__body">
+                                        <div class="slds-page-header__name">
+                                            <div class="slds-page-header__name-title">
+                                                <h1>
+                                                    <span class="slds-page-header__title slds-truncate" title="Patient Details" style="font-size:18px;"><u>Patient Details</u></span>
+                                                </h1>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:radioGroup name="radioGroup"
+                                                                  label=""
+                                                                  options="{! v.options }"
+                                                                  value="{! v.value }"
+                                                                  type="radio"/>    
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:input type="checkbox" label="New Patient with Existing Mobile" checked="{!v.newContact}" disabled="{!(v.listPatientAlternate.length > 0 ? false : true)}"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2" onkeyup="{!c.getDataForMobile}">
+                                            <lightning:input aura:id="mobileNoId" label="Mobile Number / Max ID" value="{!v.mobileNo}" required="true" messageWhenValueMissing="Field is required"/>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2" >
+                                            <aura:if isTrue="{!v.listPatientAlternate.length > 1}">
+                                                <div class="slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_1-of-1">
+                                                        <lightning:select aura:id="picklistId" name="Max Id - Patient Name" label="Max ID - Patient Name" value="{!v.selectedMaxId}" onchange="{!c.getDataForMaxIdPicklist}" required="true" messageWhenValueMissing="Select Max Id - Patient Name" disabled="{!v.newContact}"> 
+                                                            <option text="---None---" value=""/>
+                                                            <aura:iteration items="{!v.listPatientAlternate}" var="option">
+                                                                <option text="{!option.Max_ID__c+'-'+option.Name}" value="{!option.Max_ID__c}"/>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                    </div>	
+                                                </div>
+                                                <aura:set attribute="else">
+                                                    <lightning:input label="Max ID" value="{!v.maxId}" disabled="true"/>
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-gutters">
+                                        <aura:if isTrue="{!and(v.listPatient.length > 0,v.newContact ? false : true)}">
+                                            <div class="slds-col slds-size_1-of-2" >
+                                                <lightning:input label="Salutation" value="{!v.contactSalutation}" disabled="{!not(empty(v.listPatient))}"/>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!or(v.listPatient.length == 0,v.newContact ? true : false)}">
+                                            <div class="slds-col slds-size_1-of-2" >
+                                                <lightning:select name="Salutation" label="Salutation" value="{!v.contactSalutation}" >
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listSalutation}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select> 	
+                                            </div>
+                                        </aura:if>
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:input label="Full Name" value="{!v.contactName}" disabled="{!and(v.listPatient.length > 0,v.newContact ? false : true)}" required="{!(or(v.listPatient.length == 1,v.listPatient.length == 0) ? true : false)}" aura:id="contactNameId" messageWhenValueMissing="Field is required"/>
+                                            <!--<span class="slds-text-body_small slds-text-color_error" style="display:none" id="fullNameId">
+                                               Field is required
+                                            </span>-->
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2" onkeypress="{!c.isNumber}">
+                                            <lightning:input label="Age" value="{!v.contactAge}" disabled="{!and(v.listPatient.length > 0,v.newContact ? false : true)}"/>
+                                        </div>
+                                        <aura:if isTrue="{!and(v.listPatient.length > 0,v.newContact ? false : true)}">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:input label="Gender" value="{!v.contactGender}" disabled="{!not(empty(v.listPatient))}"/>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!or(v.listPatient.length == 0,v.newContact ? true : false)}">
+                                            <div class="slds-col slds-size_1-of-2" >
+                                                <lightning:select name="Gender" label="Gender" value="{!v.contactGender}" >
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listGender}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select> 	
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:input type="email" aura:id="emailId" label="Email" value="{!v.contactEmail}" disabled="{!and(v.listPatient.length > 0,v.newContact ? false : true)}" />
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-2" onkeypress="{!c.isNumber}">
+                                            <lightning:input label="Alternate No." value="{!v.contactAlternateNumber}"/>
+                                        </div>
+                                         </div> 
+                                    
+                                  <!--Added by Shivam -->
+                                    
+                                    <aura:if isTrue="{!v.UserID}">
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                 <lightning:input label="User" value="{!v.UserName}" disabled="true" />
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:input label="User Id" value="{!v.UserID}" disabled="true" class="slds-hidden"/>
+                                            </div>
+                                        </div>
+                                    </aura:if>         
+                                    <hr style="margin: 1rem 0;"/>
+                                    <div class="slds-media__body">
+                                        <div class="slds-page-header__name">
+                                            <div class="slds-page-header__name-title">
+                                                <h1>
+                                                    <span class="slds-page-header__title slds-truncate" title="Patient Details" style="font-size:18px;"><u>Call Details</u></span>
+                                                </h1>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <lightning:select aura:id="callType" name="Call Type" label="Call Type" value="{!v.selectedCallType}" onchange="{!c.getServiceForCallType}" required="true" messageWhenValueMissing="Field is required">
+                                                <option text="---None---" value=""/>
+                                                <aura:iteration items="{!v.listMapKeys}" var="option">
+                                                    <option text="{!option}" value="{!option}"/>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <aura:if isTrue="{!(v.selectedCallType != 'Appointment'? true: false)}">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select aura:id="service" name="Service" label="Service" value="{!v.selectedService}" disabled="{!(v.selectedCallType.length > 0 ? false : true)}" onchange="{!c.getSource}"  required="true" messageWhenValueMissing="Field is required">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.serviceTypeList}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                            <aura:set attribute="else">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:select aura:id="appType" name="Appointment Type" label="Appointment Type" value="{!v.selectedAppointment}" onchange="{!c.getSourceAppointment}" required="{!(v.selectedCallType == 'Appointment' ? true : false)}" messageWhenValueMissing="Field is required">
+                                                        <option text="---None---" value=""/>
+                                                        <aura:iteration items="{!v.listAppointment}" var="option">
+                                                            <option text="{!option}" value="{!option}"/>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                </div>	
+                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                    <aura:if isTrue="{!(v.selectedCallType == 'Call transfer' ? true : false)}" >
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col  slds-size_1-of-2">
+                                                <lightning:select required="true" name="Source" label="Source" value="{!v.selectedSource}" disabled="{!(v.selectedService != 'Radiology' ? true :false)}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listSource}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select aura:id="tLevel" required="true" name="Transfer Level" label="Transfer Level" value="{!v.transferLevel}" messageWhenValueMissing="Field is required">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listTransferLevel}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    <aura:if isTrue="{!(v.selectedCallType == 'Appointment' ? true : false)}" >
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select aura:id="ser" required="true" name="Service" label="Service" value="{!v.selectedService}" disabled="{!(v.selectedAppointment.length > 0 ? false : true)}" onchange="{!c.getSource}" messageWhenValueMissing="Field is required">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.serviceTypeList}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                            
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <c:strike_lookup  required="true" label="Doctor" object="Account" searchField="Name" value="{!v.selectedDoctorId}" subtitleField="Doctor_Specialty__c"
+                                                                 iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                                 errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'Doctor\''}" limit="10" valueSublabel="{!v.valueSublabel}" disabled="{!(or(v.selectedAppointment == 'PHP',v.selectedAppointment == 'Modalities') ? true : false)}"/>
+                                                <span class="slds-text-body_small slds-text-color_error" style="display:none" id="doctorId">
+                                                    Field is required
+                                                </span>
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <!--<c:strike_lookup label="Speciality" object="Speciality__c" searchField="Name" value="{!v.selectedSpeciality}"
+                                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                             errorMessage="Invalid input" showRecentRecords="true" limit="5"/>-->
+                                                <lightning:input required="true" name="specialization" label="Speciality" value="{!v.valueSublabel}" disabled="{!(or(v.selectedAppointment == 'PHP',v.selectedAppointment == 'Modalities') ? true : false)}"/>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select required="true" name="Source" label="Source" value="{!v.selectedSourceAppointment}" disabled="{!(v.listSourceAppointment.length > 0?false:true)}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listSourceAppointment}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <c:strike_lookup label="Country" object="Address_Master__c" searchField="Name" value="{!v.selectedCountryId}" disabled="{!((v.selectedAppointment == 'Immigration') ? false : true)}"
+                                                                 iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                                 errorMessage="Invalid input" showRecentRecords="true" limit="10"/>
+                                                <!-- <span class="slds-text-body_small slds-text-color_error" style="display:none" id="CountryId">
+                                                Field is required
+                                            </span>-->
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    
+                                    <aura:if isTrue="{!(v.selectedCallType == 'Query' ? true : false)}" >
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select name="Sub Service" label="Sub Service" value="{!v.selectedSubService}" onchange="{!c.getSource}" disabled="{!(or(v.selectedService == 'Immigration',v.selectedService == 'Reports',v.selectedService == 'Pathology',v.selectedService == 'Campaign') ? false : true)}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listSubService}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <c:strike_lookup label="Doctor" object="Account" searchField="Name" value="{!v.selectedDoctorId}" subtitleField="Doctor_Specialty__c"
+                                                                 iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                                 errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'Doctor\''}" limit="10" valueSublabel="{!v.valueSublabel}" disabled="{!or( or(v.selectedService =='Tie up details', v.selectedService =='Department timings/Extension no'),  or( or(v.selectedService =='Radiology', v.selectedService =='Reports'), or( or(or(v.selectedService == 'Campaign',v.selectedService == 'Facility available'),or(v.selectedService == 'General Enquiry',v.selectedService == 'Staff')),or(v.selectedService == 'PHP',v.selectedService == 'Location/Route Map') )))? true : false}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <!--<c:strike_lookup label="Speciality" object="Speciality__c" searchField="Name" value="{!v.selectedSpeciality}"
+                                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                             errorMessage="Invalid input" showRecentRecords="true" limit="5"/>-->
+                                                <lightning:input name="specialization" label="Speciality" value="{!v.valueSublabel}" disabled="{!or( or(v.selectedService =='Tie up details', v.selectedService =='Department timings/Extension no'),  or( or(v.selectedService =='Radiology', v.selectedService =='Reports'), or( or(or(v.selectedService == 'Campaign',v.selectedService == 'Facility available'),or(v.selectedService == 'General Enquiry',v.selectedService == 'Staff')),or(v.selectedService == 'PHP',v.selectedService == 'Location/Route Map') )))? true : false}"/>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select name="Source" label="Source" value="{!v.selectedSource}" disabled="{!(v.selectedService != 'Radiology' ? true :false)}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listSource}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    <div class="slds-grid slds-gutters">
+                                        <aura:if isTrue="{!(v.selectedCallType == 'Blank Call' ? true : false)}">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select required="true" name="Disconnection Type" label="Disconnection Type" value="{!v.disconnectionType}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listDisconnectionType}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>
+                                        </aura:if>  
+                                        <aura:if isTrue="{!(or(v.selectedCallType == 'Feedback/Complaints',v.selectedCallType == 'Query') ? true : false)}">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:input required="true" label="Call back" value="{!v.callBack}" disabled="{!or(or(or(v.selectedService == 'Campaign',v.selectedService == 'Facility available'),or(v.selectedService == 'General Enquiry',v.selectedService == 'Staff')),or(v.selectedService == 'Doctor',v.selectedService == 'Location/Route Map')) ? true : false}"/>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!(v.selectedCallType == 'Call transfer' ? true : false)}">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <lightning:select aura:id="callTransStatus" required="true" name="Call Transfer Status" label="Call Transfer Status" value="{!v.selectedStatus}" messageWhenValueMissing="Field is required">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listStatus}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>   
+                                            </div>
+                                        </aura:if>
+                                        <!--<aura:if isTrue="{!(v.selectedCallType == 'Appointment' ? true : false)}">-->
+                                        
+                                        <div class="{!(v.selectedCallType == 'Appointment' ? 'slds-col slds-size_1-of-2' : 'slds-hide')}">
+                                            <lightning:select name="Channel" label="Channel" value="{!v.selectedChannel}" aura:id="channelId" disabled="{!(or(or(v.selectedService == 'Cancelled',v.selectedService == 'Re-schedule'),or(v.selectedAppointment == 'PHP',v.selectedAppointment == 'Immigration')) ? true : false)}" required="{!(v.selectedCallType == 'Appointment' ?(or(or(v.selectedService == 'Cancelled',v.selectedService == 'Re-schedule'),or(v.selectedAppointment == 'PHP',v.selectedAppointment == 'Immigration')) ? false : true):false)}" messageWhenValueMissing="Field is required">
+                                                <option text="---None---" value=""/>
+                                                <aura:iteration items="{!v.listChannel}" var="option">
+                                                    <option text="{!option}" value="{!option}"/>
+                                                </aura:iteration>
+                                            </lightning:select>   
+                                        </div>
+                                        <!--</aura:if>-->
+                                        
+                                        
+                                        <div class="slds-col slds-size_1-of-2">
+                                            <c:strike_lookup label="Location" object="Business_Unit__c" searchField="Name" value="{!v.selectedLocationId}"
+                                                             iconName="standard:account" order="Name" loadingMessage="Loading..." required="true" subtitleField="Business_Unit_HIS__c"
+                                                             errorMessage="Invalid input" showRecentRecords="true" limit="5" filter="{!'Active__c=true'}"/>
+                                            <span class="slds-text-body_small slds-text-color_error" style="display:none" id="locationId">
+                                                Field is required
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <aura:if isTrue="{!(v.selectedCallType == 'Appointment'?true:false)}">
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-1">
+                                                <lightning:select name="Reason" label="Reason" value="{!v.selectedReason}" disabled="{!(v.listReason.length > 0?false:true)}">
+                                                    <option text="---None---" value=""/>
+                                                    <aura:iteration items="{!v.listReason}" var="option">
+                                                        <option text="{!option}" value="{!option}"/>
+                                                    </aura:iteration>
+                                                </lightning:select>
+                                            </div>                                            
+                                        </div>
+                                    </aura:if>                            
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-1">
+                                            <lightning:textArea label="Remarks" value="{!v.remarks}" required="true" aura:id="remarksId" messageWhenValueMissing="Field is required"/>
+                                        </div> 
+                                    </div>
+                                </div>
+                                
+                                <hr style="margin: 1rem 0;"/>
+                                <aura:if isTrue="{!or(and(v.selectedCallType == 'Appointment',v.selectedAppointment == 'PHP'),and(v.selectedCallType == 'Query',or(v.selectedService == 'PHP',v.selectedService == 'Location/Route Map')))}">
+                                    <div class="slds-grid slds-gutters slds-p-left_small slds-p-right_small">
+                                        <div class="slds-col slds-size_1-of-1">
+                                            <lightning:input label="SMS Number" value="{!v.smsNumber}" />
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:set attribute="footer">
+                                    <div class="slds-align_absolute-center">
+                                        <lightning:button label="Save &amp; Close" iconName="utility:save" variant="brand" onclick="{!c.saveData}"  disabled="{!v.hideSave}"/>
+                                        <!--<lightning:button label="Save &amp; New" iconName="utility:redo" variant="brand" onclick="{!c.saveData}"/>-->
+                                    </div>
+                                </aura:set>
+                            </lightning:card>
+                        </div>
+                        
+                        <div class="slds-col slds-size_3-of-12">
+                            `   <lightning:card title="Last Five Transactions" iconName="standard:work_order_item" footer="">
+                            <aura:if isTrue="{!v.listTransactions.length > 0}">
+                                <c:TransactionDetailsCmp listTransactions="{!v.listTransactions}"/>
+                                <aura:set attribute="else">
+                                    <div class="slds-p-left_small" style="color:red">
+                                        No Records Found
+                                    </div>
+                                </aura:set>
+                            </aura:if>
+                            </lightning:card>
+                            <lightning:card title="Preferred Channel" iconName="standard:individual">
+                                <div class="slds-p-horizontal_medium">
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                                            <span class="probab">{!v.preferredChannel}</span>
+                                        </div> 
+                                    </div> 
+                                </div>
+                            </lightning:card>
+                            <c:CallTimer noMobile="{!v.noMobile}" ltngCurrTime="{!v.ltngCurrTime}" currentTime="{!v.currentTime}"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="slds-p-top_large"/>
+                <div class="slds-p-top_large"/> 
+                <div class="slds-p-top_large"/>
+                <div class="slds-p-top_large"/> 
+                <div class="slds-p-top_large"/>
+                <div class="slds-p-top_large"/> 
+                <div class="slds-p-top_large"/>
+                <div class="slds-p-top_large"/> 
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!!v.showPage}">
+            <ui:message severity="error" closable="false" >
+                <div class="slds-align_absolute-center" style="height: 3rem;">
+                    <div style="font-weight:bolder;font-size:25px;">Error</div>
+                    
+                </div>
+                <div class="slds-align_absolute-center" style="height: 3rem;">
+                    <div style="font-size:20px;">Unauthorized access to the page</div>
+                </div>
+            </ui:message>	
+        </aura:if>
+    </aura:if>
+    <!--<hr style="height:1rem 0"/>-->
+    <!--<aura:if isTrue="false">
+        <div class="slds-p-horizontal_small">
+            <iframe src="https://www.qikwell.com/users/login" width="1500px" maxwidth="1500px;" height="100%"/>
+        </div>
+    </aura:if>
+    <c:QuickWellCmp showDialog="{!v.showDialog}" />-->
+</aura:component>

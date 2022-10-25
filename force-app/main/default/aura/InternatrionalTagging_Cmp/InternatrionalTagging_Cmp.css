@@ -1,0 +1,34 @@
+.THIS.scrollerHeight{
+    height:200px;
+}
+
+.THIS .myFieldset {
+    display: block;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-top: 0.35em;
+    padding-bottom: 0.625em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    border: 2px solid RGB(245, 245, 245);
+    width:98%;
+    border-radius:5px;
+}
+ 
+.THIS .myLegend {
+    display: block;
+    padding-left: 2px;
+    padding-right: 2px;
+    border: none;
+}
+
+.THIS .btnCls{
+    margin-top:18px;
+}
+
+.THIS .slds-truncate {
+    text-overflow: inherit;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word; 
+}

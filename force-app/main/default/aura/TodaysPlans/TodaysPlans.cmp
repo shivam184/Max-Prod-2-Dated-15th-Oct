@@ -1,0 +1,196 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" controller="TodayPlanApexController">
+    
+    <aura:attribute name="isDesktop" type="Boolean" default="true" />
+    <aura:attribute name="showTodayPlan" type="Boolean" default="false" />
+    <aura:attribute name="showStartDay" type="Boolean" default="false" />
+    <aura:attribute name="showEndDay" type="Boolean" default="false" />
+    <aura:attribute name="endDay" type="Boolean" default="false" />
+    <aura:attribute name="officeVisit" type="Boolean" default="false" />
+    <aura:attribute name="disabledCheckIn" type="Boolean" default="false" />
+    <aura:attribute name="distanceTravelled" type="Decimal" />
+    <aura:attribute name="listBeatPlanDetails" type="List" />
+    <aura:attribute name="listCompletedBeatPlanDetails" type="List" />
+    <aura:attribute name="showCancelComponent" type="Boolean" default="false" />
+    <aura:attribute name="showRescheduleComponent" type="Boolean" default="false" />
+    <aura:attribute name="showStartDayComponent" type="Boolean" default="false" />
+    <aura:attribute name="showEndDayComponent" type="Boolean" default="false" />
+    <aura:attribute name="showVisitToOfficeComponent" type="Boolean" default="false" />
+    <aura:attribute name="showConfirmCheckInComponent" type="Boolean" default="false" />
+    <aura:attribute name="showCheckOutComponent" type="Boolean" default="false" />
+    <aura:attribute name="beatPlanId" type="String" default="" />
+    <aura:attribute name="beatDayId" type="String" default="" />
+    <aura:attribute name="beatPlanDetailId" type="String" default="" />
+    <aura:attribute name="latitude" type="Decimal" />
+    <aura:attribute name="longitude" type="Decimal" />
+    <aura:attribute name="Address" type="String" default="" />
+    <aura:attribute name="showConfirmUpdateLocationComponent" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="String" default="" />
+    <aura:attribute name="showConvertComponent" type="Boolean" default="false" />
+    <aura:attribute name="ownerName" type="String" default=""/>
+    <aura:attribute name="relatedTo" type="String" default="" />
+    <aura:attribute name="todayDate" type="Date" />
+    <aura:attribute name="listTaskSubject" type="List" />
+    <aura:attribute name="listEventSubject" type="List" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="startDayEvent" event="c:ConfirmStartDayEvent" action="{!c.doInit}"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" /> 
+    <ui:scrollerWrapper  class="scrollerSize">
+        <aura:if isTrue="{!v.endDay}" >
+            <div class="slds-p-horizontal_medium" style="background:#e5f0fa">
+                <div class="slds-p-top_medium"></div>
+                <div class="slds-p-top_medium"></div> 
+                <div class="slds-align_absolute-center abc" style="height: 4rem;">Day Ended Successfully</div>
+            </div>
+            <aura:set attribute="else">
+                <aura:if isTrue="{!v.showTodayPlan}" >
+                    <aura:if isTrue="{!or(v.listBeatPlanDetails.length > 0,v.showStartDay)}" >
+                        <div class="slds-p-horizontal_medium" style="background:#fff">
+                            <div class="slds-p-top_medium"></div>
+                            <div class="slds-p-top_medium"></div> 
+                            <div class="{!v.isDesktop ? 'slds-align_absolute-center abc' : 'slds-align_absolute-center mobileView'}" style="height: 4rem;">
+                                TODAY'S PLANNED VISITS
+                            </div>
+                            <aura:if isTrue="{!v.isDesktop}" >
+                                <div class="slds-align_absolute-center" style="height: 2rem;">
+                                    <lightning:button label="Start Your Day" variant="brand" disabled="{!v.showStartDay}" iconName="utility:logging" onclick="{!c.doStartDay}"/>
+                                    <lightning:button label="End Your Day" variant="brand" disabled="{!v.showEndDay}" iconName="utility:logout" onclick="{!c.doEndDay}" />
+                                    <lightning:button label="Back To Office" variant="brand" disabled="{!v.officeVisit}" iconName="utility:home" onclick="{!c.doBackToOffice}"/>
+                                </div>
+                                <aura:set attribute="else">
+                                    <lightning:card title="" class="pqr">
+                                        <div class="slds-p-horizontal_medium ">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-1" style="width:100%;">	
+                                                    <lightning:button class="{!v.isDesktop ? '' : 'mobView'}" label="Start Your Day" variant="brand" disabled="{!v.showStartDay}" iconName="utility:logging" onclick="{!c.doStartDay}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-p-top_small"/>
+                                        <div class="slds-p-horizontal_medium ">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-1">
+                                                    <lightning:button class="{!v.isDesktop ? '' : 'mobView'}" label="End Your Day" variant="brand" disabled="{!v.showEndDay}" iconName="utility:logout" onclick="{!c.doEndDay}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-p-top_small"/>
+                                        <div class="slds-p-horizontal_medium ">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-1">	
+                                                    <lightning:button class="{!v.isDesktop ? '' : 'mobView'}" label="Back To Office" variant="brand" disabled="{!v.officeVisit}" iconName="utility:home" onclick="{!c.doBackToOffice}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-p-top_small"/>
+                                    </lightning:card>
+                                </aura:set>
+                            </aura:if>
+                            <div class="slds-p-top_medium"></div>
+                            <div class="slds-p-top_medium"></div>
+                            
+                            <aura:iteration items="{!v.listBeatPlanDetails}" var="item" indexVar="i">
+                                <lightning:card title="{!item.name}" class="pqr"  iconName="{!'custom:custom86'}">
+                                    <aura:set attribute="actions">
+                                        <aura:if isTrue="{!v.showStartDay}" >
+                                            <aura:if isTrue="{!item.showGeoTagButton}" >
+                                              <lightning:buttonIcon  accesskey="{!item.recordId}" variant="bare" onclick="{!c.doGetLocation}" iconName="utility:checkin" alternativeText="Update Location"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!item.convertToAccount}" >
+                                                <lightning:buttonIcon accesskey="{!item.recordId}" variant="bare" onclick="{!c.doConvertToAccount}" iconName="utility:adduser" alternativeText="Convert to Account"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.isDesktop}" >
+                                                <lightning:button label="CheckIn" variant="brand" accesskey="{!item.recordId}" ariaLabel="{!item.showGeoTagButton}" disabled="{!v.disabledCheckIn}" onclick="{!c.doCheckIn}" iconName="utility:checkin" />
+                                                <lightning:button label="CheckOut" variant="brand" accesskey="{!item.recordId}" disabled="{!!item.showCheckedIn}" onclick="{!c.doCheckOut}" iconName="utility:logout" name="{!item.name}"/>
+                                                <lightning:button label="Re-schedule" variant="brand" accesskey="{!item.recordId}" disabled="{!item.showCheckedIn}" onclick="{!c.doReschedule}" iconName="utility:loop" />
+                                                <lightning:button label="Cancel" variant="brand" accesskey="{!item.recordId}" disabled="{!item.showCheckedIn}" onclick="{!c.doCancel}" iconName="utility:close"/>
+                                            </aura:if>
+                                        </aura:if>
+                                    </aura:set>
+                                    <aura:set attribute="footer">
+                                        <aura:if isTrue="{!v.showStartDay}" >
+                                            <aura:if isTrue="{!!v.isDesktop}">
+                                                <div class="slds-p-horizontal_medium">
+                                                    <div class="slds-grid slds-gutters">
+                                                        <div class="slds-col slds-size_1-of-2">
+                                                            <lightning:button label="CheckIn" class="{!v.isDesktop ? '' : 'mobView'}" variant="brand" accesskey="{!item.recordId}" ariaLabel="{!item.showGeoTagButton}" disabled="{!v.disabledCheckIn}" onclick="{!c.doCheckIn}" iconName="utility:checkin"/>
+                                                        </div>
+                                                        <div class="slds-col slds-size_1-of-2">
+                                                            <lightning:button label="CheckOut" class="{!v.isDesktop ? '' : 'mobView'}" variant="brand" accesskey="{!item.recordId}" disabled="{!!item.showCheckedIn}" onclick="{!c.doCheckOut}" iconName="utility:logout" name="{!item.name}"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-p-top_small"/>
+                                                <div class="slds-p-horizontal_medium">
+                                                    <div class="slds-grid slds-gutters">
+                                                        <div class="slds-col slds-size_1-of-2">
+                                                            <lightning:button label="Re-schedule" class="{!v.isDesktop ? '' : 'mobView'}" variant="brand" accesskey="{!item.recordId}" disabled="{!item.showCheckedIn}" onclick="{!c.doReschedule}" /></div>
+                                                        <div class="slds-col slds-size_1-of-2">    
+                                                            <lightning:button label="Cancel" class="{!v.isDesktop ? '' : 'mobView'}" variant="brand" accesskey="{!item.recordId}" disabled="{!item.showCheckedIn}" onclick="{!c.doCancel}" iconName="utility:close"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </aura:if>
+                                        </aura:if>
+                                    </aura:set>
+                                    <div class="slds-p-horizontal_large">
+                                        <div class="slds-p-horizontal_large">
+                                            • Phone: <lightning:formattedPhone value="{!item.phoneNo}" /><br/>
+                                            • Address: {!item.address}<br/>
+                                        </div>
+                                    </div>
+                                </lightning:card>
+                            </aura:iteration>
+                        </div>
+                        
+                        
+                        
+                        <aura:if isTrue="{!v.listCompletedBeatPlanDetails.length > 0}">
+                            <div class="slds-p-horizontal_medium slds-p-top_medium slds-m-bottom_small" style="background:#fff">
+                                <div class="slds-text-align_center abc" >COMPLETED VISITS</div>
+                                <!--<div class="slds-text-align_center abc" >Distance Traveled (Metres) : {!v.distanceTravelled}</div> -->
+                            </div>
+                            
+                            <aura:iteration items="{!v.listCompletedBeatPlanDetails}" var="item" indexVar="i">
+                                <lightning:card title="{!item.name}" class="pqr"  iconName="{!'custom:custom86'}">
+                                    <div class="slds-p-horizontal_large">
+                                        <div class="slds-p-horizontal_large">
+                                            • Phone: <lightning:formattedPhone value="{!item.phoneNo}" /><br/>
+                                            • Address: {!item.address}<br/>
+                                        </div>
+                                    </div>
+                                </lightning:card>
+                            </aura:iteration>
+                        </aura:if>
+                        <div class="slds-p-top_small"/>
+                        
+                        <aura:set attribute="else">
+                            <div class="slds-p-horizontal_medium" style="background:#fff">
+                                <div class="slds-p-top_medium"></div>
+                                <div class="slds-p-top_medium"></div> 
+                                <div class="slds-align_absolute-center abc" style="height: 4rem;">NO PLANNED VISIT</div>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                    <aura:set attribute="else">
+                        <div class="slds-p-horizontal_medium" style="background:#fff">
+                            <div class="slds-p-top_medium"></div>
+                            <div class="slds-p-top_medium"></div> 
+                            <div class="slds-align_absolute-center abc" style="height: 4rem;">NO PLAN FOUND</div>
+                        </div>    		
+                    </aura:set>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </ui:scrollerWrapper>
+    <c:ConfirmCancel showCancelComponent="{!v.showCancelComponent}" beatPlanDetailId="{!v.beatPlanDetailId}" />
+    <c:ConfirmReschedule showRescheduleComponent="{!v.showRescheduleComponent}" beatPlanDetailId="{!v.beatPlanDetailId}" />
+    <c:ConfirmStartDay showStartDayComponent="{!v.showStartDayComponent}" latitude="{!v.latitude}" longitude="{!v.longitude}" beatPlanId="{!v.beatPlanId}" />
+    <c:ConfirmVisitToOfficeComponent showVisitToOfficeComponent="{!v.showVisitToOfficeComponent}" beatPlanId="{!v.beatPlanId}" />
+    <c:ConfirmCheckIn showConfirmCheckInComponent="{!v.showConfirmCheckInComponent}" beatPlanDetailId="{!v.beatPlanDetailId}" longitude="{!v.longitude}" latitude="{!v.latitude}" beatDayId="{!v.beatDayId}" Address="{!v.Address}"/>
+    <c:ConfirmCheckOut showCheckOutComponent="{!v.showCheckOutComponent}" beatPlanDetailId="{!v.beatPlanDetailId}" longitude="{!v.longitude}" latitude="{!v.latitude}" beatDayId="{!v.beatDayId}" ownerName="{!v.ownerName}" relatedTo="{!v.relatedTo}" todayDate="{!v.todayDate}" listTaskSubject="{!v.listTaskSubject}" listEventSubject="{!v.listEventSubject}" Address="{!v.Address}" />
+    <c:ConfirmEndDay showEndDayComponent="{!v.showEndDayComponent}" beatDayId="{!v.beatDayId}" latitude="{!v.latitude}" longitude="{!v.longitude}" />
+    <c:ConfirmUpdateLocation showConfirmUpdateLocationComponent="{!v.showConfirmUpdateLocationComponent}" recordId="{!v.recordId}" latitude="{!v.latitude}" longitude="{!v.longitude}"/>
+    <c:ConfirmConvertToAccount showConvertComponent="{!v.showConvertComponent}" beatPlanDetailId="{!v.recordId}"/>
+</aura:component>

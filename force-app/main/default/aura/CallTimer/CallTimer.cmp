@@ -1,0 +1,33 @@
+<aura:component >
+    
+    <aura:attribute name="ltngCurrTime" type="String" default="00:00:00"/>
+    <aura:attribute name="ltngIsDisplayed" type="boolean" default="false"/> 
+    <aura:attribute name="noMobile" type="Boolean" default="false" />
+    <aura:attribute name="currentTime" type="String" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.handleStartClick}" />
+    
+    
+    <lightning:card title="Call Timer" iconName="custom:custom25">
+        <div class="slds-p-horizontal_medium">
+            <center> 
+                <div class="slds-grid slds-gutters">
+                    <!--<div class="slds-col slds-size_1-of-4">
+                        <aura:if isTrue="{!v.ltngIsDisplayed}">
+                            <img src="/resource/1553463372000/TimePlay" aura:id="start" style="cursor:pointer;" onclick="{! c.handleStopClick }"/>
+                            <aura:set attribute="else">
+                                <img src="/resource/1553463795000/TimePause" aura:id="pause" style="cursor:pointer;" onclick="{! c.handleStartClick }"/>
+                            </aura:set>
+                        </aura:if>
+                    </div>-->
+                    <div class="slds-col slds-size_1-of-2">
+                     	<div class="timerClass" id="divId1">{!v.currentTime}</div>   
+                     </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <div class="timerClass" id="divId" >{!v.ltngCurrTime}</div>
+                    </div>
+                </div>
+            </center>
+        </div>
+    </lightning:card>
+</aura:component>

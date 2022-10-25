@@ -1,0 +1,63 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global" controller="ACDFormController" >
+    
+    
+    <aura:attribute name="prospect" type="Prospect__c" default="{'sobjectType':'Prospect__c'}"/>
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="successMessage" type="String" />
+   <aura:handler name="change" value="{!v.prospect.Max_Id__c}" action="{!c.itemsChange}"/>
+    
+    <lightning:card title="ACD Information" iconName="custom:custom86">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner variant="brand" />
+        </aura:if>
+        <hr />
+        
+        <div class="slds-p-horizontal_large">
+            <aura:if isTrue="{!v.successMessage.length>0}">
+                <ui:message title="Confirmation" severity="confirm" closable="false">
+                    {!v.successMessage}
+                </ui:message>
+            </aura:if>
+           
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-1">
+                    <!--<lightning:input aura:id="maxId" label="Max ID" value="{!v.prospect.Max_Id__c}" required="true" messageWhenValueMissing="Complete this field"/>-->
+                    <c:strike_lookup label="Patient" object="Account" searchField="Max_ID__c" value="{!v.prospect.Max_Id__c}"
+                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                     errorMessage="Invalid input" showRecentRecords="true" filter = "{!'RecordType.Name=\'Patient\''}" limit="20" subtitleField="Name" required="true"/>
+                    <div class="slds-form-element__help" style="display:none;color:#dc143c;" id="NameId">Patient Is Required Field</div>
+                </div>
+                
+            </div>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-1">
+                    <c:strike_lookup label="Doctor" object="Account" searchField="Name" value="{!v.prospect.Doctor__c}"
+                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                     errorMessage="Invalid input" showRecentRecords="true" filter = "{!'RecordType.Name=\'Doctor\''}"  />
+                </div>
+            </div> 
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-1">
+                    <c:strike_lookup label="Hospital Location" object="Business_Unit__c" searchField="Name" value="{!v.prospect.HIS_Hospital_Location__c}"
+                                     iconName="custom:custom86" order="Name" loadingMessage="Loading..."
+                                     errorMessage="Invalid input" showRecentRecords="true" filter="{!'Active__c=true'}"/>
+                </div>
+            </div>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-1">
+                    <lightning:textArea label="Description" value="{!v.prospect.Description__c}"/>
+                </div>
+            </div>
+            <br/> 
+        </div>
+        
+        <aura:set attribute="footer">
+            <div class="slds-align_absolute-center">
+                <lightning:button label="Save" variant="brand" onclick="{!c.saveDetails}"/>
+            </div>
+        </aura:set>
+        
+    </lightning:card>
+    
+    
+</aura:component>

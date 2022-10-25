@@ -1,0 +1,22 @@
+<aura:component >
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="selectedRowsCount" type="Integer" default="0"/>
+    <aura:attribute name="maxRowSelection" type="Integer" default="1"/>
+    <aura:attribute name="selectedLeadId" type="String" default="" />
+    <aura:attribute name="selectedAdmissionId" type="String" default="" />
+    <aura:attribute name="tableType" type="String" default="" />
+    <aura:attribute name="selectedMecpSource" type="String" default="" />
+    
+    <ui:scrollerWrapper class="scrollerHeight">
+        <div class="slds-p-horizontal_medium">
+            <h1>Selected Rows: {! v.selectedRowsCount }</h1>
+            <lightning:datatable
+                                 columns="{!v.columns}"
+                                 data="{!v.data }"
+                                 keyField="id"
+                                 maxRowSelection="{!v.maxRowSelection}"
+                                 onrowselection="{!c.selectedRecords}"/>
+        </div>
+    </ui:scrollerWrapper>
+</aura:component>

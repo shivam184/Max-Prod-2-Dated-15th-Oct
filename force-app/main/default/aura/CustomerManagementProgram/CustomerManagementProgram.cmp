@@ -1,0 +1,282 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" access="global" controller="AddFamilyMemberApex">
+    
+    
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 55%;
+        width: 55% !important;
+        height: 100% !important;
+        }
+    </aura:html>
+    
+    
+    <aura:attribute name="isDesktop" type="Boolean" default="true" />
+    <aura:attribute name="activeSections" type="String[]" default="['PersonalInformation']" />
+    <aura:attribute name="lead" type="Lead__c" default="{'sobjectType':'Lead__c','Want_to_Enrol__c':false,'Stage__c':'New'}" />
+    
+    
+    <aura:attribute name="leadPhone" type="String"/>
+    <aura:attribute name="patietnWrapper" type="Object"/>
+    <aura:attribute name="errorMsg" type="String"/>
+    <aura:attribute name="sucessMsg" type="String"/>
+    
+    <aura:attribute name="listMemberEnrollmentType" type="List" /> 
+    <aura:attribute name="listGender" type="List" /> 
+    <aura:attribute name="listOccupation" type="List" /> 
+    <aura:attribute name="insuranceList" type="List" /> 
+    
+    <aura:attribute name="referToMax" type="Boolean" default="false" />
+    <aura:attribute name="email" type="Boolean" default="true" />
+    <aura:attribute name="SMS" type="Boolean" default="true" /> 
+     
+    <aura:attribute name="original_filename" type="String" /> 
+    <aura:attribute name="fileBase64" type="String" /> 
+    
+    
+    <aura:attribute name="maxDate" type="Date" default="" /> 
+    
+    <aura:attribute name="primaryMemberId" type="String"/>
+    <aura:attribute name="showFamilyMemberComponent" type="Boolean" default="false"/>
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.leadPhone}" action="{!c.doCheckMobileNumber}" />
+    
+    <aura:handler name="change" value="{!v.lead.Want_to_Enrol__c}" action="{!c.handleChangeWantToEnroll}" />
+    <aura:handler name="change" value="{!v.referToMax}" action="{!c.handleChangeReferToMax}" /> 
+    <aura:handler name="change" value="{!v.lead.Doctor__c}" action="{!c.handleChangeDoctor}" />
+    
+    
+    
+    <aura:if isTrue="{!!v.showFamilyMemberComponent}">
+        <lightning:card title="Add Member" iconName="utility:user">
+            <aura:if isTrue="{!v.showSpinner}">
+                <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+            </aura:if>
+            <aura:set attribute="actions">
+                <aura:if isTrue="{!v.isDesktop}">
+                    <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                    <lightning:button label="Save" accesskey="save" variant="brand" onclick="{!c.doSave}"/>
+                    <lightning:button label="Save &amp; Add Member" accesskey="savenadd" variant="brand" onclick="{!c.doSave}" disabled="{!!v.lead.Want_to_Enrol__c}"/>
+                </aura:if>
+            </aura:set>
+            <aura:set attribute="footer" >
+                <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                <lightning:button label="Save" variant="brand" accesskey="save" onclick="{!c.doSave}"/>
+                <lightning:button label="Save &amp; Add Member" accesskey="savenadd" variant="brand" onclick="{!c.doSave}" disabled="{!!v.lead.Want_to_Enrol__c}"/>
+            </aura:set>
+            
+            <aura:if isTrue="{!v.errorMsg.length>0}">
+                <ui:message title="Error" severity="error" closable="false">
+                    {!v.errorMsg}
+                </ui:message>
+            </aura:if>
+            <aura:if isTrue="{!v.sucessMsg.length>0}">
+                <ui:message title="Success" severity="confirm" closable="true">
+                    {!v.sucessMsg}
+                </ui:message>
+            </aura:if>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" aura:id="accord" activeSectionName="{!v.activeSections}" >
+                <lightning:accordionSection name="PersonalInformation" label="Personal Information" >
+                    <aura:set attribute="body">
+                        <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input type="tel" maxlength="10"  aura:id="mobile" label="Mobile Number" value="{!v.leadPhone}"  required="true" messageWhenValueMissing="Field is required" />  
+                            </div>
+                            <aura:if isTrue="{!v.patietnWrapper.isSuccess}">
+                                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                                    
+                                    <lightning:input type="checkbox" aura:id="existingContact" label="Existing Member" checked="{!v.patietnWrapper.isExisiting}" disabled="true"/>  
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                                    <lightning:input type="checkbox" aura:id="newContact" label="New Contact" checked="{!v.patietnWrapper.isNewPat}" disabled="true"/>  
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                                    <lightning:input type="checkbox" class="{!v.patietnWrapper.isNewPat ? 'slds-hide' : ''}" onchange="{!c.handleNewChange}" aura:id="newExisting" label="New Contact With Existing Mobile" checked="{!v.patietnWrapper.isExistButNewPat}" />  
+                                </div>
+                            </aura:if>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="MAX ID" value="{!v.lead.Max_ID__c}" disabled="true" class="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.moreThanOnePat) ? '' : 'slds-hide'}"/> 
+                                <lightning:select label="Max ID" aura:id="maxid" onchange="{!c.populateSelectedPat}" class="{!and(v.patietnWrapper.isExisiting,v.patietnWrapper.moreThanOnePat) ? '' : 'slds-hide'}" value="{!v.lead.Max_ID__c}" required="true" >
+                                    <option value="">-- None --</option>
+                                    <aura:iteration items="{!v.patietnWrapper.maxIdwrap}" var="option">
+                                        <option text="{!option.patLabel}" value="{!option.maxId}"/>
+                                    </aura:iteration>
+                                </lightning:select>  
+                            </div> 
+                            
+                            
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input aura:id="firstName" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="First Name" value="{!v.lead.First_Name__c}" required="true" messageWhenValueMissing="Field is required"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input aura:id="mname" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="Middle Name" value="{!v.lead.Middle_Name__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  aura:id="surName" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" label="Surname" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" value="{!v.lead.Last_Name__c}" required="true" messageWhenValueMissing="Field is required"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:select name="gender" label="Gender" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" aura:id="gender" value="{!v.lead.Gender__c}" required="true" messageWhenValueMissing="Field is required">
+                                    <option value="">-- None --</option>
+                                    <aura:iteration items="{!v.listGender}" var="option">
+                                        <option text="{!option}" value="{!option}"/>
+                                    </aura:iteration>
+                                </lightning:select>   
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input type="Date" aura:id="dob" label="Date Of Birth" placeholder="dd/mm/yyyy" value="{!v.lead.DOB__c}" onchange="{!c.handleChangeDob}" max="{!v.maxDate}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input required="true" type="number" messageWhenValueMissing="Field is required" messageWhenRangeOverflow="Invalid age" messageWhenRangeUnderflow="Age cannot be less than 55 for Citizen Plus" max="99" min="{!and(v.lead.Want_to_Enrol__c,v.lead.Membership_Enrolment_Type__c=='Citizen Plus') ? 55 : 0}" onkeyup="{!c.handleChangeAge}" aura:id="Age" label="Age" value="{!v.lead.CMP_Age__c}" />  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Email ID" value="{!v.lead.Email__c}" type="email" messageWhenTypeMismatch="Invalid Email ID"/>  
+                            </div>  
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input label="Address" value="{!v.lead.Address_Line_1__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  aura:id="city" label="City" value="{!v.lead.City__c}" messageWhenValueMissing="Please Fill City"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input  label="Pin Code" type="tel" maxlength="6" aura:id="pin" value="{!v.lead.ZIP_Postal_Code__c}" messageWhenValueMissing="Please Fill Pin Code"/>  
+                            </div> 
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:input   label="Locality" value="{!v.lead.Locality__c}"/>  
+                            </div> 
+                            <div class="slds-col slds-size_1-of-1 slds-p-top--small" style="font-size:15px;">
+                                <lightning:input type="checkbox" aura:id="enrol"  label="Enroll in Customer Programme" checked="{!v.lead.Want_to_Enrol__c}"/>  
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-p-top--small" style="font-size:15px;">
+                                <lightning:input type="checkbox"  label="Refer to Max" checked="{!v.referToMax}" />  
+                            </div>
+                        </div>
+                    </aura:set>
+                </lightning:accordionSection>
+                
+                
+                <!-- WANT TO ENROL SECTION -->
+                <aura:if isTrue="{!v.lead.Want_to_Enrol__c}">
+                    <lightning:accordionSection name="PresentOccupation" label="Enrollment Details" aura:id="occSection" class="">
+                        <aura:set attribute="body">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:select name="memberEnrollmentType" onchange="{!c.validateAge}" label="Member Enrollment Type" aura:id="memberEnrollmentTypeId" value="{!v.lead.Membership_Enrolment_Type__c}" required="true" messageWhenValueMissing="Field is required">
+                                        <aura:iteration items="{!v.listMemberEnrollmentType}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    </lightning:select>  
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:select   label="Present Occupation" aura:id="presentOccupation" value="{!v.lead.Present_Occupation__c}" >
+                                        <option value="">-- None --</option>
+                                        <aura:iteration items="{!v.listOccupation}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    </lightning:select>   
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:select   label="Insurance Details" aura:id="insurance" value="{!v.lead.Insurance_Details__c}">
+                                        <option value="">-- None --</option>
+                                        <aura:iteration items="{!v.insuranceList}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    </lightning:select>   
+                                </div>
+                                <aura:if isTrue="{!or(v.patietnWrapper.isNewPat,v.patietnWrapper.isExistButNewPat)}">
+                                    <div class="slds-p-top_medium"/> 
+                                    <div class="slds-col slds-size_1-of-1">
+                                        <label>Signature</label>
+                                        <c:SignatureComponent/>	
+                                    </div>
+                                </aura:if>
+                            </div>   
+                        </aura:set>
+                    </lightning:accordionSection>
+                </aura:if>
+                
+                
+                <!-- REFER TO MAX SECTION -->
+                <aura:if isTrue="{!v.referToMax}" >
+                    <lightning:accordionSection name="VitalInformation" label="Refer To Max Details">
+                        <aura:set attribute="body">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <!--<lightning:input type="text" name="inputd" label="Doctor" value="{!v.lead.Doctor__c}"/> -->
+                                    <c:strike_lookup label="Doctor" object="Account" searchField="Name" value="{!v.lead.Doctor__c}"
+                                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                     errorMessage="Invalid input" showRecentRecords="true" filter = "{!'RecordType.Name=\'Doctor\''}"  />
+                                    <span aura:id="docError" class="slds-hide" style="color:firebrick">Please select a doctor</span>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input aura:id="remarks" required="true" messageWhenValueMissing="Field is required" label="Remarks" value="{!v.lead.Remarks__c}"/>  
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <aura:if isTrue="{!v.original_filename.length>0}">
+                                        <div class="slds-p-top_small"/>
+                                        Selected File:&nbsp;<a class="slds-truncate" aura:id="fileDetail">{!v.original_filename}</a>&nbsp;&nbsp;&nbsp;
+                                        <a style="color:firebrick" onclick="{!c.removeFile}">Remove</a>
+                                    </aura:if>
+                                    <lightning:input type="file" label="Upload File" onchange="{!c.handleFileChange}"/> 
+                                </div>
+                            </div>   
+                        </aura:set>  
+                    </lightning:accordionSection>
+                </aura:if>
+                
+                <!-- TERMS AND CONDITION -->
+                <lightning:accordionSection name="Terms" label="Terms and Conditions">
+                    <div style="text-align:justify">
+                        <span style="font-size:10px;">
+                            Maxhealthcare.in is committed to protecting your privacy. It is important to us that our customers retain their privacy while taking advantage of the services that we have to offer. To this end, we adhere to the following basic principles:
+                            We employ the highest levels of security to keep your personal information strictly confidential.<br/>
+                            We will not disclose or sell any of your personal information, including your name, address, age, sex or medical history to any third party without your permission.<br/>
+                            Although we use cookie technology to help users navigate our site efficiently we never use cookies to store personal information, such as credit card numbers. Please be aware, however, that our site contains link to other sites and that the privacy practices of other sites may differ from those of maxhealthcare.in. If you have any additional questions or concerns regarding our privacy policies, please email us at <a>privacy@maxhealthcare.com</a> and we'll respond within 24 hours.<br/>
+                            <b>Our Privacy Policy explains:</b><br/>
+                            <ul>
+                                <li>1.What information we collect from you</li>
+                                <li>2.How we use that information</li>
+                            </ul>
+                            Your privacy is of utmost importance to us. If you have any questions you can reach out to us at <a>digitalquery@maxhealthcare.com</a><br/>
+                            <b>Information we collect</b><br/>
+                            We collect information to provide better services to you, and we may send this information to third party tools to improve our services, and to personalize your app experience.
+                            We collect information in the following ways:
+                            Information you give us: Name, phone number, email id 
+                            Information we automatically collect:  
+                            Device  Hardware information - We collect device-specific information such as device make  model, network information, advertiser ID (to uniquely identify your device) and email address, if available 
+                            Location information - We automatically capture your public IP address, and your geo coordinates    for android apps, if the location permission is available, lat/long is automatically collected<br/>
+                            <b>How we use information we collect</b><br/>
+                            We use this data and may send it to a third party tools for analytics so that we can personalize your app experience<br/>
+                            <b>Program Terms and Conditions:</b><br/>
+                            <ul>
+                                <li>1.Card Issuance is at the sole discretion of Max Healthcare Institute Ltd.</li>
+                                <li>2.Filling of this form does not in any way guarantee the Card or usage of benefits</li>
+                                <li>3.This card/ benefits offered are not valid for people covered under any Govt. Scheme (CGHS, ESI, DGHS etc.)</li>
+                                <li>4.Discounts are not applicable for TPA routed cases</li>
+                            </ul>
+                        </span>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-p-right--small slds-p-top--small">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="checkbox"   label="Email" checked="{!v.email}" /> 
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="checkbox" label="SMS" checked="{!v.SMS}" /> 
+                        </div>
+                    </div>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        </lightning:card>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.showFamilyMemberComponent}">
+        <c:AddFamilyMember primaryMemberId="{!v.primaryMemberId}" sucessMsg="{!v.sucessMsg}"/>
+    </aura:if>
+    
+    
+</aura:component>

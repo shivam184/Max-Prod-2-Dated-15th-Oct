@@ -1,0 +1,38 @@
+<apex:page showHeader="false" sidebar="false">
+    
+    
+    <apex:includeLightning />
+    
+    <div id="lightning" />
+    
+    <script>
+    var visualForceFunction = function(event)
+    {
+        window.location.href='/lightning/o/Lead__c/list?filterName=Recent';
+    }
+    
+    var mobileNo = '{!$CurrentPage.parameters.mobileno}';
+    var param = '{!$CurrentPage.parameters.dt}';
+    if(mobileNo!=undefined && mobileNo.length>0){ 
+        $Lightning.use("c:MAXLABCALL1", function() {
+            $Lightning.createComponent("c:MAXLABCALLERNAME",
+                                       {"mobileNo" : mobileNo,"callingMobileNo" : mobileNo,"smsNumber" : mobileNo,"param" : param},
+                                       "lightning",
+                                       function() {
+                                          $A.eventService.addHandler({ "event": "c:CloseWindow", "handler" : visualForceFunction});    
+                                       });
+        });
+    }
+    else{
+        $Lightning.use("c:MAXLABCALL1", function() {
+            $Lightning.createComponent("c:MAXLABCALLERNAME",
+                                       {},
+                                       "lightning",
+                                       function() {
+                                           
+                                       });
+        });
+    }
+    </script>
+    
+</apex:page>

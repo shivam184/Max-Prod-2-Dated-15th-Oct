@@ -1,0 +1,91 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:lightningQuickAction" access="global" controller="PreIntimationTaggingApex">
+    
+    <aura:attribute name="firstBlockColumns" type="List"/>
+    <aura:attribute name="secondBlockColumns" type="List"/>
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="data1" type="Object" />
+    <aura:attribute name="selectedLeadId" type="String" />
+    <aura:attribute name="selectedAdmissionId" type="String" />
+    <aura:attribute name="tagged" type="Boolean" default="false" />
+    <aura:attribute name="maxId" type="String" default="" />   	
+    <aura:attribute name="patientName" type="String" default="" />
+    <aura:attribute name="treatingDoctorName" type="String" default="" />
+    <aura:attribute name="mecpName" type="String" />
+    <aura:attribute name="modalPromise" type="Aura.Action"/>    
+    <aura:attribute name="selectedUserId" type="String" />
+    <aura:attribute name="selectedMECPId" type="String" default=""/>
+    <aura:attribute name="patientNameLead" type="String" default="" />
+    <aura:attribute name="mecpAccountName" type="String" default="" />
+    <aura:attribute name="fromEvent" type="Boolean" default="false" />
+    
+    <aura:attribute name="queryFilter" type="String" default="'MECP%'"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.tagged}" action="{!c.doTagged}" />
+    <aura:handler name="change" value="{!v.selectedUserId}" action="{!c.doInit}" />
+    <aura:handler event="c:UpdateLeadMecpType" action="{!c.handleEvent}"/>
+    <aura:handler event="c:PassMECPId" action="{!c.handleMECPId}"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" />
+    
+    
+    <lightning:card title="PRE-INTIMATION TAGGING" iconName="standard:hierarchy">
+        <div class="slds-align_absolute-center">
+            <lightning:button label="Refresh" iconName="utility:refresh" class="marginTop" onclick="{!c.doRefresh}"/>
+            &nbsp;&nbsp;
+            <div class="vertical"></div>
+            &nbsp;&nbsp;
+            <lightning:input type="checkbox" label="Tagged" class="marginTop" checked="{!v.tagged}" />
+        </div>
+        
+        <div class="slds-p-top_medium"/>
+        
+        <div class="slds-p-horizontal_large">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.doSearch}">
+                    <lightning:input label="Patient's Name" class="fontWt" value="{!v.patientName}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.doSearch}">
+                    <lightning:input label="Max ID" class="fontWt" value="{!v.maxId}" />
+                </div>
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.doSearch}">
+                    <lightning:input label="Treating Doctor" class="fontWt" value="{!v.treatingDoctorName}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.doGetMecp}">
+                    <lightning:input label="MECP Source" class="fontWt" value="{!v.mecpName}" onchange="{!c.doUpdateMECPId}"/>
+                </div>
+            </div>
+        </div>
+        
+        <aura:set attribute="actions">
+            <lightning:buttonGroup>
+                <lightning:button label="Tag With Pre-Intimation" iconName="utility:pin" onclick="{!c.tagWithPreIntimation}" disabled="{!v.tagged}"/>
+                <lightning:button label="Tag W/O Pre-Intimation"  iconName="utility:pin" onclick="{!c.tagWithoutPreIntimation}" disabled="{!v.tagged}"/>
+                <lightning:button label="Re-Tagging" iconName="utility:pin" onclick="{!c.retagging}" disabled="{!!v.tagged}"/>
+                <lightning:button label="Untag" variant="brand" iconName="utility:recurring_exception" onclick="{!c.untag}" disabled="{!!v.tagged}"/>
+            </lightning:buttonGroup>
+        </aura:set>
+        <div class="slds-p-top_medium"/>
+        <c:LightningDataTable columns="{!v.firstBlockColumns}" data="{!v.data1}" selectedAdmissionId="{!v.selectedAdmissionId}" tableType="Admission"/>
+        <div class="slds-p-horizontal_large">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-4 slds-p-left_small fontWt">
+                    <c:strike_lookup label="Sales Person" object="User" searchField="Name" value="{!v.selectedUserId}"
+                                     iconName="standard:user" order="Name" loadingMessage="Loading..."
+                                     errorMessage="Invalid input" showRecentRecords="true" filter = "{!'Profile.Name like '+v.queryFilter}" limit="5"/>
+                </div>
+                <div class="slds-col slds-size_1-of-4 slds-p-left_small" onkeyup="{!c.doGetPatientName}">
+                    <lightning:input label="Patient's Name" class="fontWt" value="{!v.patientNameLead}"/>
+                </div>
+                <div class="slds-col slds-size_1-of-4 slds-p-left_small" onkeyup="{!c.doGetPatientName}">
+                    <lightning:input label="MECP Account Name" class="fontWt" value="{!v.mecpAccountName}"/>
+                </div>
+            </div>
+        </div>
+        <div class="slds-p-top_medium"/>
+        <c:LightningDataTable columns="{!v.secondBlockColumns}" data="{!v.data}" selectedLeadId="{!v.selectedLeadId}" tableType="Lead"/>
+        <div class="slds-p-top_medium"/>
+    </lightning:card>
+</aura:component>

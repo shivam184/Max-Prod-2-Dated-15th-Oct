@@ -1,0 +1,14 @@
+.THIS .marginTop{
+    margin-top:-40px;
+}
+
+.THIS .vertical{
+    margin-top:-40px;
+    border-left: 1px solid lightgrey;
+    height: 30px;
+}
+
+.THIS .fontWt{
+    font-weight:bolder;
+    
+}

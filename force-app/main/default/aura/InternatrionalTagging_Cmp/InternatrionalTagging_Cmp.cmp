@@ -1,0 +1,134 @@
+<aura:component implements="force:appHostable" access="global" controller="InternationalTagging_Controller">   
+    
+    <aura:HTML tag="style">
+        .uiScrollerWrapper.scrollable {
+        height:180px;
+        }
+        
+        .slds-gutters .slds-col {
+        padding-right: .75rem;
+        padding-left: .75rem;
+        height: 70px;
+        }
+    </aura:HTML>
+    <aura:attribute name="uppercolumns" type="List"/>
+    <aura:attribute name="lowercolumns" type="List"/>
+    <aura:attribute name="upperdata" type="Object"/>
+    <aura:attribute name="lowerdata" type="Object"/>
+    <aura:attribute name="selectedRowId" type="string" />
+    <aura:attribute name="selectedackId" type="string" />
+    <aura:attribute name="isTagged" type="boolean" default="false" />
+    <aura:attribute name="fromDate" type="Date" />
+    <aura:attribute name="toDate" type="Date" />
+    <!--<aura:attribute name="maxId" type="String" />
+    <aura:attribute name="dateOfAdmission" type="String" />-->
+    <aura:attribute name="modalPromise" type="Aura.Action"/>
+    <aura:attribute name="selectedUserId" type="String" />
+    <aura:attribute name="selectedMECPId" type="String" default=""/>
+    <aura:attribute name="patientNameLead" type="String" default="" />
+    <aura:attribute name="mecpAccountName" type="String" default="" />
+    <aura:attribute name="checkEnter" type="Boolean" default="false" />
+    <aura:registerEvent name="sampleEvent" type="c:UpdateLeadMecpType"/>
+    
+    <!--Added By Anas-->
+    <aura:attribute name="maxId" type="String" />
+    <aura:attribute name="fromDateLead" type="Date" />
+    <aura:attribute name="toDateLead" type="Date" />
+    <!--End-->
+    
+    <aura:attribute name="selPatName" type="String"/>
+    <aura:attribute name="selIPID" type="String"/>
+    <aura:attribute name="selMaxID" type="String"/>
+    
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <aura:handler event="c:UpdateInternationalTagging" action="{!c.refreshView}"/>
+    <aura:handler event="c:UpdateWithoutSMSEvent" action="{!c.refreshLead}"/>
+    <aura:handler name="change" value="{!v.selectedUserId}" action="{!c.init}" />
+    
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+    </aura:if>
+    
+    <lightning:card footer="" title="International Tagging" iconName="standard:hierarchy">
+        <div class="slds-align_absolute-center">
+            <lightning:input type="checkbox" label="Tagged" checked="{!v.isTagged}" onchange="{!c.getTagged}"/>
+        </div>
+        
+        <div class="slds-p-horizontal_large">
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.searchbyFilters}">
+                    <lightning:input value="{!v.selPatName}" placeholder="Search by Patient Name..."  />
+                </div>
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.searchbyFilters}">
+                    <lightning:input value="{!v.selIPID}" placeholder="Search by IPID..."  />
+                </div>
+                <div class="slds-col slds-size_1-of-4" onkeyup="{!c.searchbyFilters}">
+                    <lightning:input value="{!v.selMaxID}" placeholder="Search by Max ID..."  />
+                </div>
+               <!-- <div class="slds-col slds-size_1-of-4">
+                    <lightning:button class="btnCls" label="Search" onclick="{!c.searchbyFilters}"/>
+                </div>  -->
+            </div>
+        </div>
+        
+        
+        <aura:set attribute="actions">
+            <lightning:button iconName="utility:pin" label="Tag with SMS" variant="brand" onclick="{!c.doTagWithSMS}"/>
+            <lightning:button iconName="utility:pin" label="Tag w/o SMS" variant="brand" onclick="{!c.doTagWOSMS}"/>
+            <lightning:button iconName="utility:pin" label="Direct Tagging" variant="brand" onclick="{!c.doDirectTagging}"/>
+            <lightning:button iconName="utility:refresh" label="Refresh" onclick="{!c.refreshLead}"/>
+        </aura:set>     
+        
+        <fieldset class="myFieldset">
+            <legend class="myLegend"><b>Patients/Patient Transactions</b></legend>
+            <ui:scrollerWrapper class="scrollerHeight">
+                <div class="slds-p-horizontal_medium slds-truncate">
+                    <lightning:datatable
+                                         columns="{!v.uppercolumns}"
+                                         data="{!v.upperdata}"
+                                         keyField="id"
+                                         maxRowSelection="1"
+                                         onrowselection="{!c.selectedRecordsId}"
+                                         />
+                </div>
+            </ui:scrollerWrapper>
+        </fieldset>
+        <div class="slds-p-top_small"/> 
+        <fieldset class="myFieldset">
+            <legend class="myLegend"><b>Pre-Intimations</b></legend>
+            <div class="slds-p-horizontal_large">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-4 slds-p-left_small fontWt" onkeyup="{!c.searchLead}">
+                        <lightning:input value="{!v.maxId}" placeholder="Search by Message..." />
+                    </div>
+                    <div class="slds-col slds-size_1-of-4 slds-p-left_small fontWt" onkeyup="{!c.searchLead}">
+                        <lightning:input type="date" value="{!v.fromDateLead}" placeholder="From Date"  datePicker="true" />
+                    </div>
+                    <div class="slds-col slds-size_1-of-4 slds-p-left_small fontWt" onkeyup="{!c.searchLead}">
+                        <lightning:input type="date" value="{!v.toDateLead}" placeholder="To Date"  datePicker="true" />
+                    </div>
+                    <!--<div class="slds-col slds-size_1-of-4">
+                        <lightning:button class="btnCls" label="Search" onclick="{!c.searchLead}"/>
+                    </div>-->
+                </div>
+            </div>
+            <ui:scrollerWrapper class="scrollerHeight slds-truncate">
+                <lightning:datatable
+                                     columns="{!v.lowercolumns}"
+                                     data="{!v.lowerdata }"
+                                     keyField="id"
+                                     maxRowSelection="1"
+                                     onrowselection="{!c.selectedRecords}"/>
+                <lightning:layoutItem padding="around-small" flexibility="auto">
+                    <lightning:button iconName="utility:refresh" class="slds-float_right" onclick="{!c.refreshLead}"/>
+                </lightning:layoutItem>
+            </ui:scrollerWrapper>
+        </fieldset>
+    </lightning:card>
+</aura:component>

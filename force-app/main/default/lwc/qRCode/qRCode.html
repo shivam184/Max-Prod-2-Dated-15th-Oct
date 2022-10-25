@@ -1,0 +1,58 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <div class="slds-var-m-around_medium">
+      <legend class="slds-form-element__legend slds-form-element__label slds-form-element_horizontal">
+         <legend class="slds-form-element__legend slds-form-element__label">Patient Mobile Number</legend>
+         <lightning-input type="text"
+               value={searchValue}
+               onchange={searchKeyword}
+               placeholder="Patient Mobile Number"
+               pattern="[0-9]{10}$" message-when-pattern-mismatch="Please enter a valid phone number"
+               ></lightning-input>
+        <!--<div  class="slds-form-element__legend slds-form-element_horizontal">
+            <lightning-input type="text"
+               value={searchValue}
+               label="Pateint Mobile Number"
+               onchange={searchKeyword} style="font-size: 27px;"
+               ></lightning-input>
+         </div>-->
+      </legend>
+      <div class="slds-text-align_center">
+         <lightning-button label="Search"
+            onclick={handleSearchKeyword}
+            variant="brand" ></lightning-button>
+         </div>      
+         
+            <!-- <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-var-m-top_small">
+            <thead>
+               <tr class="slds-line-height_reset">
+                  <th class="" scope="col">
+                     <div class="slds-truncate" title="First Name">First Name</div>
+                  </th>
+                  
+                  <th class="" scope="col">
+                     <div class="slds-truncate" title="Phone">Phone</div>
+                  </th>
+                  
+               </tr>
+            </thead>
+            
+            <tbody>   
+           <template for:each={contactsRecord} for:item="con">
+                  <tr class="slds-hint-parent" key={con.LastName}>
+                     <td>
+                        <div class="slds-truncate">{con.FirstName}</div>
+                     </td>
+                     <td>
+                        <div class="slds-truncate">
+                           <lightning-formatted-phone value={con.Phone} ></lightning-formatted-phone>
+                        </div>
+                     </td>
+                    
+                  </tr>
+               </template>
+            </tbody>
+         </table>-->
+      </div>
+      <c-patient-Form listofpatient={contactsRecord} ></c-patient-Form >
+</template>

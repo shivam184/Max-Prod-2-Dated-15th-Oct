@@ -1,0 +1,164 @@
+<!--Created By:Nitya (IRT) on 7th June 2022
+-->
+<aura:component controller="DoctorOnCallApex" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction,force:appHostable" access="global" >
+    
+    <!-- Aura Handlers-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--Aura Attributes-->
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="Name" type="String"/>
+    <aura:attribute name="Age" type="string"/>
+    <aura:attribute name="Gender" type="string"/>
+    <aura:attribute name="Diagnosis" type="String"/>
+    <aura:attribute name="vName" type="String"/>
+    <aura:attribute name="covid" type="Boolean"/>
+    <aura:attribute name="dose1" type="Date"/>
+    <aura:attribute name="dose2" type="Date"/>
+    <aura:attribute name="booster" type="Date"/>
+    <aura:attribute name="allergy" type="Boolean"/>
+    <aura:attribute name="secConsult" type="String"/>
+    <aura:attribute name="treatment" type="String"/>
+    <aura:attribute name="testToDo" type="String"/>
+    <aura:attribute name="pDiagnosis" type="String"/>
+    <aura:attribute name="clinical" type="String"/>
+    <aura:attribute name="familyHist" type="String"/>
+    <aura:attribute name="pastIll" type="String"/>
+    <aura:attribute name="presentIll" type="String"/>
+    <aura:attribute name="currentIssue" type="String"/>
+    <aura:attribute name="ifYes" type="String"/>
+    <aura:attribute name="docName" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="dmc" type="String"/>
+    <aura:attribute name="sign" type="String"/>
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <br/>
+    
+    <!--content starts-->    
+    <div style="padding: 4%;">
+        <div class="slds-clearfix">
+            <div class="slds-float_left">
+                <div class="slds-size_small">
+                    <img src="{!$Resource.DoctorOnCallLogo}"/>
+                </div>
+            </div>
+        </div>
+        <div class="slds-align_absolute-center">
+            <b><p style="font-size: x-Large;font-style: unset;"> PATIENT DETAILS</p></b>
+        </div>
+        <br/><br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="tel" disabled="true" label="Name" value="{!v.Name}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="tel" disabled="true" label="Age" value="{!v.Age}"  />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="tel" disabled="true" label="Gender" value="{!v.Gender}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="tel" disabled="true" label="Diagnosis" value="{!v.Diagnosis}"  />  
+            </div>
+        </div>
+        <br/>
+        
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <br/><lightning:input type="checkbox" name="options" disabled="true" label="Covid Vaccination" checked="{!v.covid}" />
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="tel" disabled="true" label="Vaccine Name" value="{!v.vName}"  />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="date" disabled="true" label="Dose 1" value="{!v.dose1}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="date" disabled="true" label="Dose 2" value="{!v.dose2}"  />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:input type="date" disabled="true" label="Booster" value="{!v.booster}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <br/><lightning:input type="Checkbox" disabled="true" name="options" label="Allergies (Yes/No)" checked="{!v.allergy}"  />  
+            </div>
+        </div>
+        <br/>
+        
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="If Yes, Please Specify" value="{!v.ifYes}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Current Issues" value="{!v.currentIssue}" />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="History of Present Illness" value="{!v.presentIll}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="History of Past Illness" value="{!v.pastIll}" />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Personal History/Family History" value="{!v.familyHist}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Clinical Notes" value="{!v.clinical}" />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Provisional Diagnosis" value="{!v.pDiagnosis}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Tests to be Done" value="{!v.testToDo}" />  
+            </div>
+        </div>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Treatment" value="{!v.treatment}" />  
+            </div>
+            <div class="slds-col slds-size_2-of-4">
+                <lightning:textarea disabled="true" label="Secondary Consultation (If required)" value="{!v.secConsult}" />  
+            </div>
+        </div>
+        <br/>
+        
+        
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_2-of-2">
+                <div class="slds-float_right">
+                    <b><span style="font-size: Large;font-style: unset;">{!v.docName}</span></b><br/>
+                    <b><span style="font-size: medium;font-style: unset;">{!v.dmc}</span></b><br/>
+                    <div class="slds-size_small"><lightning:formattedRichText value="{!v.sign}"/></div>
+                </div>
+            </div>
+        </div>
+        <br/>
+    </div><!--padding div-->
+</aura:component>

@@ -1,0 +1,670 @@
+<apex:page lightningStylesheets="true" showHeader="false" sidebar="false" controller="PSUPlanCalendar" id="pg" cache="false">
+    
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"/>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"/>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.js"/>
+            
+            <link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.css" rel="stylesheet" />
+                <link href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.print.css" rel="stylesheet" media="print"  />
+                    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+    
+    <apex:includeLightning />
+    
+    <apex:slds />
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="html">
+        <head>
+            
+            <style>
+                body .fc {
+                overflow:auto;
+                }
+                .fc-unthemed{
+                padding:18px;
+                }
+                
+                .fc-event{
+                line-height: 1.8;
+                
+                }
+                .slds-scope .slds-box_small, .slds-scope .slds-box--small {
+                padding:.20rem;
+                cursor: pointer;
+                } 
+                
+                #external-events .fc-event {
+                cursor: pointer;
+                }
+                
+                #external-events p {
+                margin: 1.5em 0;
+                font-size: 11px;
+                color: #666;
+                }
+                
+                #external-events p input {
+                margin: 0;
+                vertical-align: middle;
+                }
+                .slds-scope a{
+                background-color: #3a87ad;
+                color:#fff;
+                }
+                .slds-scope a:hover{
+                color:#fff;
+                }
+                .slds-form-element__label{
+                color:#333;font-weight:bolder;
+                }
+            </style>
+            
+            <title>Beat Plan Calendar</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
+        <body id="body"> 
+            <apex:form id="frm">
+                
+                <apex:outputPanel rendered="{!NOT(isMemberOfGroup)}">
+                    <b>You are not allowed to access this site{!isMemberOfGroup}</b>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!isMemberOfGroup}">
+                    
+                    
+                    <apex:actionFunction name="saveData" action="{!callSaveApex}" reRender="calendarJq" status="status" />
+                    <apex:actionFunction name="refresh" action="{!fetchDataOnLoad}" reRender="frm" status="status" />
+                    
+                    
+                    <apex:actionFunction name="searchDetails" action="{!mecpinit}" status="status" reRender="datalist,calendarJq">
+                        <apex:param name="arg1" value="" assignTo="{!selectedTerritory}"/>
+                        <apex:param name="arg2" value="" assignTo="{!selectedSpecialty}"/>
+                        <apex:param name="arg3" value="" assignTo="{!selectedName}"/>
+                    </apex:actionFunction>    
+                    <apex:actionFunction name="searchByName" action="{!mecpinit}" status="status" reRender="datalist,calendarJq"/> 
+                    <apex:actionFunction name="searchBychannel" action="{!mecpinit}" status="status" reRender="datalist,calendarJq"/>
+                    <apex:actionFunction name="searchall" action="{!mecpinit}" status="status" reRender="datalist,calendarJq"/> 
+                    <apex:actionFunction name="eventsinit" action="{!eventsinit}" status="status" reRender="calendarJq"/> 
+                    
+                    <apex:inputHidden id="setValueOfMeeting" value="{!meeting}"/>
+                    
+                    
+                    <div class="demo-only" style="height: 4rem;position:absolute;width:100%;display:none;" id="toastDiv">
+                        <div class="slds-notify_container slds-is-relative">
+                            <div class="slds-notify slds-notify_toast slds-theme_success" role="status">
+                                <span class="slds-assistive-text">success</span>
+                                
+                                <div class="slds-notify__content">
+                                    <h2 class="slds-text-heading_small ">Meetings scheduled successfully</h2>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="demo-only" style="height: 4rem;position:absolute;width:100%;display:none;" id="toastDiv1">
+                        <div class="slds-notify_container slds-is-relative">
+                            <div class="slds-notify slds-notify_toast slds-theme_error" role="status">
+                                <span class="slds-assistive-text">error</span>
+                                
+                                <div class="slds-notify__content">
+                                    <h2 class="slds-text-heading_small ">Cant schedule meetings for past date</h2>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="slds-page-header" style="padding:20px;background:rgb(220,220,220);">
+                        <div class="slds-page-header__row">
+                            <div class="slds-page-header__col-title">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container slds-icon-standard-event" title="description of icon when needed">
+                                            <svg aria-hidden="true" class="slds-icon">
+                                                <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/standard-sprite/svg/symbols.svg#event')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Icon Assistive Text</span>
+                                        </span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <div class="slds-page-header__name">
+                                            <div class="slds-page-header__name-title">
+                                                <h1>
+                                                    <span class="slds-page-header__title slds-truncate" title="Beat Plan Calendar" style="font-weight:bolder;font-size:25px;">TOUR PLAN CALENDAR</span>
+                                                </h1>
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="slds-page-header__name-meta" style="font-size:15px;">Plan • Schedule • Complete</p>
+                                        
+                                    </div>
+                                    
+                                    <!--MONTH PICKLIST-->
+                                    
+                                    <div class="slds-align_absolute-left" style="margin-right: 55%;">
+                                        <label class="slds-form-element__label" for="form-element-01" style="color:#333;font-weight:bolder;">Select Month</label>
+                                        <apex:selectList label="Select Month" style="color:#333;font-weight:bolder;" value="{!monthInt}" size="1" styleClass="slds-select" onchange="eventsinit(); return false;">
+                                            <apex:selectOptions value="{!monthOpts}"/> 
+                                        </apex:selectList>  
+                                        <apex:actionStatus startText="Please Wait..." id="schlstatus"/>
+                                    </div>
+                                    
+                                    <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Refresh" onclick="refresh(); return false;"/>
+                                    <apex:commandButton value="Save" onClick="callSaveJS(); return false;" styleClass="slds-button slds-button_brand" />    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-p-top_medium"/>
+                    
+                    
+                    <apex:outputPanel styleclass="slds-grid slds-wrap" id="dataBlock" >
+                        <apex:outputPanel id="data-left-selector"
+                                          styleclass="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_3-of-12">
+                            <div class="slds-p-horizontal_small"> 
+                                <div class="slds-page-header" style="padding:7px;background:rgb(220,220,220);">
+                                    <div class="slds-page-header__row">
+                                        <div class="slds-page-header__col-title">
+                                            <div class="slds-media">
+                                                <div class="slds-media__figure">
+                                                    <span class="slds-icon_container slds-icon-standard-user" title="description of icon when needed"> 
+                                                        <svg aria-hidden="true" class="slds-icon">
+                                                            <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/standard-sprite/svg/symbols.svg#user')}"></use>
+                                                        </svg> 
+                                                        <span class="slds-assistive-text">Icon Assistive Text</span>
+                                                    </span>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <div class="slds-page-header__name">
+                                                        <div class="slds-page-header__name-title">
+                                                            <h1>
+                                                                <span class="slds-page-header__title slds-truncate" title="Select Doctors" style="font-weight:bolder;">SELECT DOCTORS</span>
+                                                            </h1>
+                                                        </div>
+                                                    </div>
+                                                    <p class="slds-page-header__name-meta">• Drag and drop to schedule meetings •</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-p-top_medium"/>
+                                
+                                <div class="slds-form-element">
+                                    
+                                    <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small" >
+                                        <div class="slds-col slds-size_1-of-1">
+                                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!checkAccount}" label="Account" onchange="searchDetails('{!selectedTerritory}','{!selectedSpecialty}','{!selectedName}');" />&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Accounts" for="MyCheckbox"/></div>
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!checkContact}" onchange="searchDetails('{!selectedTerritory}','{!selectedSpecialty}','{!selectedName}');" />&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Contacts" for="MyCheckbox"/></div>   
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                              <!--      <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small" style="{!If(mecpUser,"display:none;","display:block;")}" >
+                                        <div class="slds-col slds-size_1-of-1">
+                                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!checkLead}" onchange="searchDetails();"/>&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Leads" for="MyCheckbox"/></div>
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!checkOpp}" onchange="searchDetails();" />&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Opportunities" for="MyCheckbox"/></div>   
+                                            </div>
+                                        </div>
+                                    </div>
+                                    -->
+                                    <!-- TERRITORY -->    
+                                    <div class="slds-form-element__control" style="width:100%">
+                                        <div id="territory" />
+                                    </div>
+                                    
+                                    <!-- SPECIALTY -->
+                                    <div class="slds-form-element__control" style="width:100%">
+                                        <div id="speciality" />
+                                    </div>
+                                    <!--account chanel -->
+                                    <div class="slds-form-element__control">
+                                           <label class="slds-form-element__label" for="form-element-01">Account Channel</label>
+<!-- <apex:inputText styleClass="slds-input" onkeydown="searchByName(); " value="{!selectedName}"/> -->
+                                        <apex:selectList size="1" onchange="searchBychannel(); " value="{!selectedchannel}"  styleClass="slds-input">
+        <apex:selectOptions value="{!AccountChannel}"/>
+    </apex:selectList> 
+                                    </div>
+                                       <div></div>
+                                    <br/>
+                                    <div>
+                                      <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!self}" disabled="true"/>&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Self" for="MyCheckbox"/></div>
+                                                <div class="slds-col slds-size_1-of-2"><apex:inputCheckbox value="{!othersval}"  onchange="searchall();"/>&nbsp;<apex:outputLabel style="color:#333;font-weight:bolder;" value="Others" for="MyCheckbox"/></div>   
+                                            </div>
+                                    </div>
+                                    <br/>
+                                    <!-- NAME -->
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-form-element__label" for="form-element-01">Enter Name</label>
+                                        <apex:inputText styleClass="slds-input" onkeydown="searchByName(); " value="{!selectedName}"/>
+                                    </div>
+                                    
+                                    
+                                    
+                                </div>
+                                
+                                <div class="slds-p-top_small"/>
+                                
+                                <apex:outputPanel id="datalist">
+                                    <div id='external-events' >
+                                        <div id='external-events-listing'>
+                                            
+                                            <apex:repeat value="{!listDataWrapper}" var="dataWrp" id="theRepeat">
+                                                <div class="slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_2-of-3">
+                                                        <div class="fc-event" id="{!dataWrp.recordId}">{!dataWrp.name}</div>
+                                                        <div class="slds-p-top_small" style="padding-top: .20rem;"/>
+                                                    </div>
+                                                    <div class="slds-col slds-size_1-of-3">
+                                                        <div style="position: relative;">
+                                                            <span id="seeDat{!dataWrp.recordId}" onmouseover="display('tooltip'+'{!dataWrp.recordId}'); return false;" onmouseout="displayOut('tooltip'+'{!dataWrp.recordId}'); return false;" data-selid="1">                                            
+                                                                <a href="javascript:void(0)" aria-describedby="help" style="background:none;color:blue !important;">See Details</a>
+                                                                <div class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left slds-rise-from-ground" role="tooltip" id="tooltip{!dataWrp.recordid}" style="width:200px;position: absolute; top: -60px; left: 20px;display:none;">
+                                                                    <div class="slds-popover__body">
+                                                                        # of Visits:&nbsp;{!dataWrp.visitCount} <br/>
+                                                                        ₹ Revenue:&nbsp;
+                                                                        <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                                                            <apex:param value="{!dataWrp.revenue}" />
+                                                                        </apex:outputText>
+                                                                    </div>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                
+                                                
+                                            </apex:repeat>
+                                            <div style="{!if(listDataWrapper.size>0,'display:none;','color:red;display:block;')}">
+                                                <div class="demo-only" style="height: 4rem;">
+                                                    <div class="slds-notify_container slds-is-relative">
+                                                        <div class="slds-notify slds-notify_toast slds-theme_warning" role="status" style="min-width:20rem;">
+                                                            <span class="slds-assistive-text">warning</span>
+                                                            
+                                                            <div class="slds-notify__content">
+                                                                <h2 class="slds-text-heading_small ">
+                                                                    No records to display
+                                                                </h2>
+                                                            </div> 
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p >
+                                            <input type='checkbox' id='drop-remove' checked="true"/>
+                                            <label for='drop-remove'>Remove after drop</label>
+                                        </p>
+                                    </div>
+                                </apex:outputPanel>
+                                
+                                
+                            </div>
+                        </apex:outputPanel>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_9-of-12">
+                            <div id="calendar1"></div>
+                        </div>
+                        <div style='clear:both'></div>
+                    </apex:outputPanel>
+                    
+                    <apex:actionStatus id="status">
+                        <apex:facet name="start">
+                            <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; opacity:0.65;width:100%; height:120%;">
+                                <div class="slds-spinner_container" >
+                                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" aria-hidden="false" role="alert">
+                                        <div class="slds-spinner__dot-a"></div>
+                                        <div class="slds-spinner__dot-b"></div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </apex:facet>
+                    </apex:actionStatus>
+                    
+                    <apex:outputPanel id="calendarJq">
+                        <script type="text/javascript"> 
+                        
+                        
+                        if('{!success}' == 'true') {
+                            document.getElementById('toastDiv').style.display = 'block'; 
+                            window.setTimeout(function(){
+                                document.getElementById('toastDiv').style.display = 'none'; 
+                                toggleSuccessFlag();
+                            },3000);
+                        }
+                        
+                        //alert('test-->'+'{!success1}');
+                        if('{!success1}' == 'true') {
+                            document.getElementById('toastDiv1').style.display = 'block'; 
+                            window.setTimeout(function(){
+                                document.getElementById('toastDiv1').style.display = 'none'; 
+                                toggleErrorFlag();
+                            },3000);
+                        }
+                        
+                        
+                        
+                        var obj = new Object('{!singleEvent}');
+                        console.log('obj-->'+obj);
+                        var meeting = '';
+                        
+                        var stdt = new Date('{!selecteddate}');
+                        
+                        var d = stdt.getDate();
+                        var m = stdt.getMonth();
+                        var y = stdt.getFullYear();
+                        
+                        var dte = new Date(y,m,d);
+                        
+                        console.log('---->'+dte);
+                        
+                        function callSaveJS() {
+                            //alert(meeting);
+                            if(meeting.length > 0){
+                                document.getElementById('pg:frm:setValueOfMeeting').value=meeting;
+                                saveData();
+                            }                    
+                            else
+                                alert('Please Schedule one Meeting');
+                            
+                        }
+                        
+                        
+                        $(document).ready(function() {
+                            
+                            
+                            
+                            // Manage status of dragging event and calendar
+                            var calEventStatus = [];
+                            
+                            
+                            /* Required functions */
+                            
+                            var isEventOverDiv = function(x, y) {
+                                
+                                var external_events = $( '#external-events' );
+                                var offset = external_events.offset();
+                                offset.right = external_events.width() + offset.left;
+                                offset.bottom = external_events.height() + offset.top;
+                                
+                                // Compare
+                                if (x >= offset.left
+                                    && y >= offset.top
+                                    && x <= offset.right
+                                    && y <= offset .bottom) { return true; }
+                                return false;
+                                
+                            }
+                            
+                            console.log('---->'+dte);
+                            
+                            function makeEventsDraggable () { 
+                                
+                                $('.fc-draggable').each(function() {
+                                    
+                                    // store data so the calendar knows to render an event upon drop
+                                    $(this).data('event', {
+                                        title: $.trim($(this).text()), // use the elements text as the event title
+                                        stick: true // maintain when user navigates (see docs on the renderEvent method)
+                                    });
+                                    
+                                    // make the event draggable using jQuery UI
+                                    $(this).draggable({
+                                        zIndex: 999,
+                                        revert: true,      // will cause the event to go back to its
+                                        revertDuration: 0  //  original position after the drag
+                                    });
+                                    
+                                    console.log('makeEventsDraggable');
+                                    
+                                    // Dirty fix to remove highlighted blue background
+                                    $("td").removeClass("fc-highlight");
+                                    
+                                });
+                                
+                            }
+                            
+                            console.log('---->'+dte);
+                            
+                            /* initialize the external events
+                -----------------------------------------------------------------*/
+                    
+                    $('#external-events .fc-event').each(function() {
+                        
+                        // store data so the calendar knows to render an event upon drop
+                        $(this).data('event', {
+                            title: $.trim($(this).text()), // use the elements text as the event title
+                            stick: true // maintain when user navigates (see docs on the renderEvent method)
+                        });
+                        
+                        // make the event draggable using jQuery UI
+                        $(this).draggable({
+                            zIndex: 999,
+                            revert: true,      // will cause the event to go back to its
+                            revertDuration: 0  //  original position after the drag
+                        });
+                        
+                    });
+                    
+                    
+                    /* initialize the calendar1
+                -----------------------------------------------------------------*/
+                    
+                    $('#calendar1').fullCalendar({
+                        header: {
+                            left: ' today',
+                            center: 'title',
+                            right: 'month,agendaWeek,agendaDay'
+                        },
+                        
+                        events: [
+                            <apex:repeat value="{!events}" var="e">
+                            
+                            {
+                            
+                            title: '{!e.title}',
+                            
+                            start: '{!e.expectedDate}' ,
+                            
+                            allDay : true,
+                            
+                            url : '{!e.url}',
+                            
+                            color : '{!e.colorName}',
+                            
+                            textColor : '{!e.textColor}'
+                            },
+                            </apex:repeat>
+                        ],
+                        editable: true,
+                        droppable: true, // this allows things to be dropped onto the calendar
+                        dragRevertDuration: 0,
+                        eventLimit: true, // allow "more" link when too many events
+                        
+                        
+                        
+                        drop: function(date, jsEvent, ui) { 
+                            
+                            var newThis = this;
+                            
+                            let selid = newThis.getAttribute('id');
+                            console.log('SEL-->'+selid);
+                            if(selid!=undefined && selid!=null)
+                                document.getElementById('seeDat'+selid).style.display='none';
+                            
+                            var str = newThis.getAttribute('id') + '@' + date.format();
+                            meeting += str + ',';
+                            
+                            
+                            // is the "remove after drop" checkbox checked?
+                            if ($('#drop-remove').is(':checked')) {
+                                // if so, remove the element from the "Draggable Events" list
+                                $(this).remove();
+                            }
+                            
+                            // if event dropped from another calendar, remove from that calendar
+                            if (typeof calEventStatus['calendar'] != 'undefined') {
+                                $(calEventStatus['calendar']).fullCalendar('removeEvents', calEventStatus['event_id']);
+                                //$(calEventStatus['calendar']).fullCalendar('unselect');
+                            }
+                            
+                            //alert('testing-->'+this.id);
+                            
+                            makeEventsDraggable();
+                        },
+                        
+                        
+                        
+                        eventReceive: function( event ) {  console.log('calendar 1 eventReceive');
+                                                         //alert(event._id);
+                                                         //$('#calendar1').fullCalendar('removeEvents',event._id);
+                                                         console.log('Event -->'+event._id);
+                                                         makeEventsDraggable();
+                                                        },
+                        
+                        
+                        eventDrop: function( event, delta, revertFunc, jsEvent, ui, view ) {  console.log('calendar 1 eventDrop');
+                                                                                            makeEventsDraggable();
+                                                                                           },
+                        eventDragStart: function( event, jsEvent, ui, view ) {
+                            console.log(event); console.log(jsEvent); console.log(ui); console.log(view);
+                            
+                            // Add dragging event in global var 
+                            calEventStatus['calendar'] = '#calendar1';
+                            calEventStatus['event_id'] = event._id;
+                            console.log('calendar 1 eventDragStart');
+                        },
+                        eventDragStop: function( event, jsEvent, ui, view ) { console.log('calendar 1 eventDragStop');
+                                                                             
+                                                                             if(isEventOverDiv(jsEvent.clientX, jsEvent.clientY)) {
+                                                                                 $('#calendar1').fullCalendar('removeEvents', event._id);
+                                                                                 var el = $( "<div class='fc-event'>" ).appendTo( '#external-events-listing' ).text( event.title );
+                                                                                 el.draggable({
+                                                                                     zIndex: 999,
+                                                                                     revert: true, 
+                                                                                     revertDuration: 0 
+                                                                                 });
+                                                                                 el.data('event', { title: event.title, id :event.id, stick: true });
+                                                                             }
+                                                                             
+                                                                             calEventStatus = []; // Empty
+                                                                             makeEventsDraggable();
+                                                                            },
+                        eventResize: function( event, delta, revertFunc, jsEvent, ui, view ) {
+                            makeEventsDraggable();
+                        },
+                        viewRender: function(){ console.log('calendar 1 viewRender');
+                                               makeEventsDraggable();
+                                              },
+                        
+                        eventRender: function(event, element) {
+                            // console.log('event--->'+event);
+                            //  console.log('element--->'+element);
+                            element.append( "<span class='closeon' style='color:red'>&nbsp;Remove</span>" );
+                            element.find(".closeon").click(function() {
+                                $('#calendar1').fullCalendar('removeEvents',event._id);
+                            });
+                        }
+                        
+                        
+                    });
+                    $('#calendar1').fullCalendar('gotoDate', dte); 
+                    
+                });
+                
+                function display(val){
+                    document.getElementById(val).style.display='block';
+                }
+                
+                function displayOut(val){
+                    document.getElementById(val).style.display='none';
+                }
+                
+                </script>
+                    </apex:outputPanel>
+                    <script>
+                    
+                 var visualForceFunction1 = function(event){
+                    let myEventData1 = event.getParam("lookupVal"); 
+                    searchDetails(myEventData1,'{!selectedTerritory}','{!selectedName}');
+                };
+                
+                var visualForceFunction2 = function(event){
+                    let myEventData2 = event.getParam("lookupVal"); 
+                    searchDetails('{!selectedTerritory}',myEventData2,'{!selectedName}');
+                };                    
+                    $Lightning.use("c:searchLookups", function() {
+                    $Lightning.createComponent("c:strike_lookup",
+                        {     
+                            obj : 'Territory',
+                            label : "Search Territory",
+                            object:"PSU_Corporate_Territory__c",
+                            searchField:"Name",
+                            value: '{!selectedTerritory}',
+                            iconName:'standard:account',
+                            order:'Name',
+                            loadingMessage:'Loading...',
+                            errorMessage : 'Invalid input',
+                            showRecentRecords : "true"    
+                            
+                        },
+                        "territory",
+                        
+                        function(cmp) {
+                            $A.eventService.addHandler({ "event": "c:SearchlookupsVfEvent", "handler" : visualForceFunction1});
+                         }
+                    );
+                });
+                    
+                                  var visualForceFunction1 = function(event){
+                    let myEventData1 = event.getParam("lookupVal"); 
+                    searchDetails(myEventData1,'{!selectedTerritory}','{!selectedName}');
+                };
+                
+                var visualForceFunction2 = function(event){
+                    let myEventData2 = event.getParam("lookupVal"); 
+                    searchDetails('{!selectedTerritory}',myEventData2,'{!selectedName}');
+                };
+ 
+                
+                
+                    /*
+                         $Lightning.use("c:searchLookups", function() {
+                    $Lightning.createComponent("c:strike_lookup",
+                        {     
+                            obj:'Specialty',
+                            label : "Search Specialty",
+                            object:"Speciality__c",
+                            searchField:"Name",
+                            value: '{!selectedSpecialty}',
+                            id:444,
+                            iconName:'standard:account',
+                            order:'Name',
+                            loadingMessage:'Loading...',
+                            errorMessage : 'Invalid input',
+                            showRecentRecords : "true"    
+                            
+                        },
+                        "speciality",
+                        
+                        function(cmp) {
+                            $A.eventService.addHandler({ "event": "c:SearchlookupsVfEvent2", "handler" : visualForceFunction2});
+                         }
+                    );
+                });
+               */  
+                    
+                    </script>
+                    
+                </apex:outputPanel>
+            </apex:form>
+        </body>
+    </html>
+    
+</apex:page>

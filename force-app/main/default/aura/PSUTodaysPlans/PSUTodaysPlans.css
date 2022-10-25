@@ -1,0 +1,21 @@
+.THIS .abc{
+    font-size:30px;
+    font-weight:bolder;
+    color:#003A7A;
+}
+
+.THIS .mobileView{
+    font-size:25px;
+    font-weight:bolder;
+    color:#003A7A;
+    background:#e5f0fa;
+}
+
+.THIS .pqr{
+    box-shadow: 0 7px 6px 0 rgba(0, 0, 0, 0.3);
+    
+}
+
+.THIS .mobView{
+    width:100%;
+}

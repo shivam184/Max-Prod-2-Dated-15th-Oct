@@ -1,0 +1,11 @@
+<aura:component implements="force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" controller="GeotagLocationApex">
+    
+    <aura:attribute name="latitude" type="Decimal" />
+    <aura:attribute name="longitude" type="Decimal" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.getLocation}" />
+    
+    <lightning:card title="" class="marginTop">
+        <lightning:spinner aura:id="mySpinner"  size="medium" variant="brand" class="slds-show" />
+    </lightning:card>
+</aura:component>

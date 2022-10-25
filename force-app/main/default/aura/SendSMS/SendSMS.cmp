@@ -1,0 +1,10 @@
+<aura:component controller="CovidSMSClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:attribute name="recordId" type="String" /> 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <lightning:card iconName="standard:entitlement" title="Loading....">
+        <lightning:spinner alternativeText="Loading...." size="medium" />
+    </lightning:card>       
+    
+    
+</aura:component>

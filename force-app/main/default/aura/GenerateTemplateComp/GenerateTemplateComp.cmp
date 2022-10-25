@@ -1,0 +1,94 @@
+<aura:component implements="force:appHostable,force:lightningQuickAction,flexipage:availableForAllPageTypes" access="global" Controller="VisaInviteApexCtrl">
+    
+    <aura:attribute name="isSendEmailModel" type="boolean" default="false" />
+    <aura:attribute name="visaInviteAllInfoWrapper" type="Object" />
+    <aura:attribute name="visaInviteId" type="String" />
+    <aura:attribute name="sendtoemails" type="string"/>
+    <aura:attribute name="visaInviteNumber" type="string"/>
+    <aura:attribute name="emailNotificationId" type="String" />
+    <aura:attribute name="emailBCCId" type="String" />
+    <aura:attribute name="emailCCId" type="String" />
+    <aura:attribute name="BCCEmailsId" type="String" />
+    <aura:attribute name="CCEmailsId" type="String" />
+    <aura:attribute name="encodedvisaInviteNumber" type="string"/>
+    
+    
+    
+    <aura:attribute name="vfHost" type="String" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:html tag="style">
+        @media (min-width: 48em){
+        .slds-modal__container {
+        width: 100% !important;
+        min-width: 20rem;
+        max-width: 92%;
+        }
+        }
+        .template-modal iframe{width: 100%!important;height: calc(100vh -
+        200px)!important;margin-top:-19px;}
+        .slds-scope .template-modal iframe{width: 100%!important;height: calc(100vh)!important;margin-top:-19px;}
+        .slds-modal__content{ height: 100%!important;max-height: 100%!important; overflow:hidden!important;padding:
+        0rem;}
+        .slds-modal__content .cuf-content{padding:0rem!important;}
+    </aura:html>
+    <div class="slds-m-around_x-small">
+        
+        <aura:if isTrue="{!v.isSendEmailModel}">
+            
+            <!-- Modal/Popup Box starts here-->
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                     aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal/Popup Box Header Starts here-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{! c.closeModel }"
+                                              alternativeText="close" variant="bare-inverse" class="slds-modal__close" />
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Attendant Detail
+                        </h2>
+                    </header>
+                    <!--Modal/Popup Box Body Starts here-->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-box slds-is-relative slds-align_absolute-center">
+                            <div class="slds-grid slds-wrap" style="margin-top: -25px;Margin-right:30px;">
+                                <label class="slds-form-element__label slds-text-title_bold" style="margin-top: 20px;Margin-right:20px;">Email Notification Id</label>
+                                <div class="slds-form-element__control">
+                                    <lightning:textarea  name="emailNotificationId" value="{!v.sendtoemails}" label="" />
+                                    
+                                </div>
+                                
+                            </div>
+                            
+                            <div class="slds-grid slds-wrap" style="margin-top: -25px;Margin-right:30px;">
+                                
+                                <label class="slds-form-element__label slds-text-title_bold" style="margin-top: 20px; Margin-right:20px;">CC Email Ids</label>
+                                <div class="slds-form-element__control">
+                                    <lightning:textarea  name="emailCCId" value="{!v.CCEmailsId}" label="" />
+                                    
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap" style="margin-top: -25px;Margin-right:30px;">
+                                <label class="slds-form-element__label slds-text-title_bold" style="margin-top: 20px;Margin-right:20px;">BCC Email Ids</label>
+                                <div class="slds-form-element__control">
+                                    <lightning:textarea  name="emailBCCId" value="{!v.BCCEmailsId}" label="" />
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="template-modal">
+                            <iframe aura:id="vfFrame"
+                                    src="{!'https://' + v.vfHost + '/apex/GenerateTemplatePDF?id='+v.visaInviteId+'&amp;visaInviteNumber='+v.encodedvisaInviteNumber}" />
+                        </div>
+                    </div>
+                    <!--Modal/Popup Box Footer Starts here-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" label="Cancel" title="Cancel"
+                                          onclick="{! c.closeModel }" />
+                        <lightning:button variant="brand" label="Send" title="Send" onclick="{!c.SendInviteEmail}" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

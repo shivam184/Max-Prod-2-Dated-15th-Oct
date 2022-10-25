@@ -1,0 +1,66 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" controller="UploadDocumentApex">
+    
+    <aura:attribute name="selectedFileType" type="String" default="" />
+    <aura:attribute name="listFileType" type="List" />
+    <aura:attribute name="notes" type="String" default="" />
+    <aura:attribute name="fileName" type="String" default="" />
+    <aura:attribute name="base64Data" type="String" default="" />
+    <aura:attribute name="files" type="Object[]"/>
+    <aura:attribute name="showAttachFile" type="Boolean" default="false" />
+    <aura:attribute name="showFileType" type="Boolean" default="false" />
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" />
+    
+    <lightning:card>
+        <aura:set attribute="title">
+            <div class="slds-align_absolute-center">
+                <lightning:icon iconName="standard:file" size="medium"/>
+                <u class="slds-m-left_x-small" style="font-size:18px;">Upload File</u>	
+            </div>
+        </aura:set>
+        <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input aura:id="fileInput" type="file" name="file" multiple="false" accept="image/png, .pdf" files="{!v.files}" onchange="{!c.onReadImage}"
+                                 label="Attach File"/>
+                <div style="color:rgba(27, 82, 151, 1.0);">{!v.fileName}</div>
+                <img src="{!v.base64Data}" style="max-width:100%;"/>
+                <aura:if isTrue="{!v.showAttachFile}" >
+                    <div class="slds-p-left_small" style="color:red;">
+                        Please Attach File
+                    </div>
+                </aura:if>
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:select name="fileTypeId" label="File Type" aura:id="fileTypeId" value="{!v.selectedFileType}">
+                    <option value="">---None---</option>
+                    <aura:iteration items="{!v.listFileType}" var="option">
+                        <option text="{!option}" value="{!option}"/>
+                    </aura:iteration>
+                </lightning:select>
+                <aura:if isTrue="{!v.showFileType}" >
+                    <div class="slds-p-left_small" style="color:red;">
+                        Please Select File Type
+                    </div>
+                </aura:if>
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <ui:inputTextArea aura:id="notes" label="Notes" value="{!v.notes}" rows="3"/>   	    
+            </div>
+        </div>
+        
+        <aura:set attribute="footer">
+            <div class="slds-clearfix">
+                <div class="slds-clearfix">
+                    <div class="slds-float_right">
+                        <lightning:button label="Cancel" variant="neutral" onclick="{!c.handleCancel}" />
+                        <lightning:button label="Save" variant="brand" onclick="{!c.handleSave}" />
+                    </div>
+                </div>
+            </div>
+        </aura:set>
+    </lightning:card>
+    
+</aura:component>

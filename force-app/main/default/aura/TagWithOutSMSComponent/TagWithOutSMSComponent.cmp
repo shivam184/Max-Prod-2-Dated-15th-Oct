@@ -1,0 +1,43 @@
+<aura:component implements="force:lightningQuickAction" controller="InternationalTagging_Controller">
+    <aura:attribute name="selecteAccount" type="String" default="" />
+    <aura:attribute name="selectedAdmissionId" type="String" default="" />
+    <aura:attribute name="remarks" type="String" default="" />
+    
+    <aura:registerEvent name="sampleEvent" type="c:UpdateInternationalTagging"/>
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <lightning:card title="Tag Without SMS" iconName="utility:pin">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+        </aura:if>
+    
+        <hr/>
+        <div class="slds-p-horizontal_medium">
+            <div class="slds-col slds-size_1-of-1">
+                <c:strike_lookup label="HCF Source" object="Account" searchField="Name" value="{!v.selecteAccount}"
+                                 iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                 limit="10" required="true"
+                                 errorMessage="Invalid input" filter="{!'RecordType.Name=\'International HCF Account\''}" />
+                
+                <center>
+                    <span style="display:none;color:red;" id="error1">Please Select Account</span>
+                </center>
+            </div>
+            <div class="slds-col slds-size_1-of-1" onkeypress="{!c.calculateLength}">
+                <lightning:textarea name="input2" label="Remarks (Max 255 Characters)" value="{!v.remarks}" />
+                <center><span style="display:none;color:red;" id="error2">Please Fill Remarks</span></center>
+            </div>
+        </div>
+        
+        <aura:set attribute="footer">
+            <div class="slds-float_right">
+                <lightning:button label="Cancel" title="Cancel" onclick="{!c.handleCancel}" />
+                <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.handleSave}" />
+            </div>
+        </aura:set>
+    </lightning:card>
+    
+</aura:component>

@@ -1,0 +1,17 @@
+<apex:page showHeader="false" sidebar="false" cache="false" standardController="Account">
+  <apex:includeLightning /> 
+    <div id="lightning" />   
+    <script>
+    $Lightning.use("c:QR_CodeApp", function() {
+        $Lightning.createComponent("c:QR_Code",
+                                   {
+                                       "recordId" :"{!$CurrentPage.parameters.Id}"
+                                   },
+                                   "lightning",
+                                   function(cmp) {
+                                       console.log('Component Loaded');
+                                       
+                                   });
+    });
+    </script>
+</apex:page>

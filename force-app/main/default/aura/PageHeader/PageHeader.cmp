@@ -1,0 +1,29 @@
+<aura:component >
+    
+    <aura:attribute name="iconName" type="String"/>
+    <aura:attribute name="pageHeader" type="String"/>
+    <aura:attribute name="class" type="String"/>
+    
+    <div class="{!'slds-page-header '+v.class}" >
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container" title="opportunity">
+                            <lightning:icon iconName="{!v.iconName}" size="small"/>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate" title="{!v.pageHeader}">{!v.pageHeader}</span>
+                                </h1>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

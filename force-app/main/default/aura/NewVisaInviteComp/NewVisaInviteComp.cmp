@@ -1,0 +1,299 @@
+<aura:component controller="VisaInviteApexCtrl" implements="force:appHostable,flexipage:availableForAllPageTypes"
+    access="global">
+
+    <!-- aura:attribute -->
+    <!-- <aura:attribute name="isNewVisaForm" type="Boolean" /> -->
+    <aura:attribute name="isAttendentModel" type="Boolean" default="false" />
+    <aura:attribute name="isSendEmailModel" type="Boolean" default="false" />
+    <aura:attribute name="isGenerateTamplate" type="Boolean" default="false" />
+    <aura:attribute name="newAttendee" type="Attendant_Detail__c" default="{'sobjectType':'Attendant_Detail__c'}" />
+    <aura:attribute name="attendantRecordType" type="String" default="Attendee" />
+    <!-- <aura:attribute name="isDonorPresent" type="Boolean" default="false" /> -->
+    <aura:attribute name="attedeesListData" type="Object" />
+    <aura:attribute name="attedeestypeDataList" type="Object" />
+    <aura:attribute name="attachmentListData" type="Object" />
+    <aura:attribute name="versionHistoryListData" type="Object" />
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="attachmentColumns" type="List" />
+    <aura:attribute name="versionHistoryColumns" type="List" />
+    <aura:attribute name="newVisaAttribute" type="Map"
+        default="{'showAttendees':false,'recordId':'','recordMode':'edit','searchPassNum':'','isloading':true,'reloadform':false,'visaInviteNum':'',
+        'visaInviteCountry':'','emailNotificationId':'','emailBCCId':'','emailCCId':'','deleteDonor':false,'firstAttandee':false,'isDonorPresent':false,'initAddDonor':false,
+                 'addTPDonor':false,'firstVersion':false}" />
+    <aura:attribute name="activeSections" type="List"
+        default="['visaInviteSection','attendantDetails','fileUpload','versionHistory']" />
+    <aura:attribute name="activeSectionsName" type="List"
+        default="['patientDetailSection','treatmentDetailSection','HCF_PartnerDetailSection','mailRecipientDetailSection','otherDetailSection']" />
+    <aura:attribute name="wrapperVisaInviteClass" type="Object" />
+    <aura:attribute name="visaInviteAllInfoWrapper" type="Object" />
+    <!--     <aura:attribute name="firstAttandee" type="Boolean" default="false" />
+ -->
+    <aura:attribute name="relationOptions" type="List" default="[]" />
+
+
+    <!-- aura:handler -->
+    <aura:handler name="init" value="{!this}" action="{!c.doinit}" />
+    <!--  aura:method -->
+    <aura:method name="parentMethod" action="{!c.refreshAttandantList}" />
+
+    <aura:if isTrue="{!v.newVisaAttribute.isloading}">
+        <div class="spinner-body">
+            <lightning:spinner alternativeText="Loading" class="loderSpinner" variant="brand" />
+        </div>
+    </aura:if>
+    <lightning:card variant="Narrow" title="Visa Invite" iconName="custom:custom20">
+        <aura:set attribute="actions">
+            <aura:if isTrue="{!v.newVisaAttribute.showAttendees}">
+                <lightning:button disabled="{!v.attedeestypeDataList.length>3}" variant="brand" label="Add Donor"
+                    title="Add Donor" onclick="{! c.addDonor }" />
+                <lightning:button disabled="{!v.attedeestypeDataList.length>3}" variant="brand" label="Add Attendee"
+                    title="Add Attendee" onclick="{! c.addAttendees }" />
+
+                <lightning:button variant="brand" label="Send Email" title="Send Email" onclick="{! c.sendEmail }" />
+            </aura:if>
+        </aura:set>
+        <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="{! v.activeSections }"
+            onsectiontoggle="{! c.handleSectionToggle }">
+            <lightning:accordionSection name="visaInviteSection" label="Visa Invite Details" class="blue-border">
+                <aura:set attribute="body">
+                    <aura:if isTrue="{!v.newVisaAttribute.reloadform}">
+                        <!--<lightning:recordForm aura:id="visaInviteForm" recordId="{!v.newVisaAttribute.recordId}"
+                            objectApiName="Visa_Invite__c" layoutType="Full" columns="2"
+                            mode="{!v.newVisaAttribute.recordMode}" onsubmit="{!c.handleSubmit}"
+                            onsuccess="{!c.handleSuccess}" oncancel="{!c.handleCancel}" />-->
+                        
+                        <!--@Author Shivam Agarwal-->
+                        <!--START-->
+                        <div style="padding-left:30px;">
+                            <lightning:recordEditForm aura:id="visaInviteForm" recordId="{!v.newVisaAttribute.recordId}" 
+                                                      objectApiName="Visa_Invite__c" onsubmit="{!c.handleSubmit}"
+                                                      onsuccess="{!c.handleSuccess}" onerror="{!c.handleError}">
+                                <lightning:messages />
+                                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="{!v.activeSectionsName}">
+                                    <lightning:accordionSection name="patientDetailSection" label="Patient Detail:">
+                                        <aura:set attribute="body">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Customer_Patient_Name__c"/>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Gender__c"/>
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Age__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Mobile_Number__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Passport_number__c" />
+                                                </div>
+                                               <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Country__c" />
+                                                </div> 
+                                               
+                                            </div>
+                                          <div class="slds-grid slds-gutters">
+                                                 <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Date_of_Birth__c" />
+                                                </div>
+                                            </div>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                    <lightning:accordionSection name="treatmentDetailSection" label="Treatment Detail:">
+                                        <aura:set attribute="body">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Doctor_Name__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Hospital_Location__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Ailment__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Diagnosis__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Appointment_Date__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Treatment_Plan__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Estimate_cost_of_treatment__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Duration_in_India__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Transplant__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Visa_Invite_Number__c"  class="slds-hidden" />
+                                                </div>
+                                            </div>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                    <lightning:accordionSection name="HCF_PartnerDetailSection" label="HCF/Partner Detail:">
+                                        <aura:set attribute="body">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="HCF_Partner_name__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Sub_HCF_Name__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="HCF_Mobile_No__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Taken_Care_by_Mobile_No__c" />
+                                                </div>
+                                            </div>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                    <lightning:accordionSection name="mailRecipientDetailSection" label="Mail Recipient Detail:">
+                                        <aura:set attribute="body">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Recipient_Email__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Recipient_City__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Type_of_Visa__c" />
+                                                </div>
+                                            </div>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                    <lightning:accordionSection name="otherDetailSection" label="Other Detail:">
+                                        <aura:set attribute="body">
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Doctor_Name_Referred_By__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Hospital_Name_Referred_By__c" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Hotel_Address__c" />
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="CreatedDate" />
+                                                </div>
+                                            </div>
+                                            <div class="slds-grid slds-gutters">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Invite_address__c" />
+                                                </div>
+                                                <!--added by Nitya on 25th April 2022-->
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning:inputField fieldName="Email_Signature__c" />
+                                                </div>
+                                                
+                                            </div>
+                                            
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                </lightning:accordion>
+                                <div align="center">
+                                    <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{!c.handleCancel}"/>
+                                	<lightning:button variant="brand" label="Save" title="Save" type="submit"/>
+                                </div>
+                            </lightning:recordEditForm>
+                        </div>
+                    <!--END-->
+
+                    </aura:if>
+
+                </aura:set>
+            </lightning:accordionSection>
+
+            <div aura:id="toggleAttendeesSection" class="slds-hide">
+                <lightning:accordionSection name="attendantDetails" label="Attendant Details" class="blue-border">
+                    <aura:if isTrue="{!v.newVisaAttribute.showAttendees}">
+                        <aura:set attribute="body">
+                            <aura:if isTrue="{!not(empty(v.attedeesListData))}">
+                                <div style="height: 150px">
+                                    <lightning:datatable aura:id="attendeeTable" columns="{!v.columns }"
+                                        data="{!v.attedeesListData}" keyField="Id" onrowaction="{!c.handleRowAction}"
+                                        hideCheckboxColumn="true" onsave="{! c.handleSaveEdition }" />
+                                </div>
+                            </aura:if>
+                        </aura:set>
+                    </aura:if>
+
+                </lightning:accordionSection>
+                <lightning:accordionSection name="fileUpload" label="Attachment" class="blue-border">
+                    <aura:set attribute="body">
+                        <div class="slds-align_absolute-center">
+                            <div class="slds-m-bottom_medium">
+                                <lightning:fileUpload name="fileUploader" multiple="true"
+                                    accept=".pdf, .png, .jpeg, .jpg" recordId="{!v.newVisaAttribute.recordId}"
+                                    onuploadfinished="{!c.handleUploadFinished}" />
+                            </div>
+                        </div>
+                        <aura:if isTrue="{!not(empty(v.attachmentListData))}">
+                            <div style="height: 200px">
+                                <lightning:datatable aura:id="attachmentTable" columns="{!v.attachmentColumns }"
+                                    data="{!v.attachmentListData}" keyField="Id" onrowaction="{!c.handleRowAction}"
+                                    hideCheckboxColumn="true" showRowNumberColumn="true" />
+                            </div>
+                        </aura:if>
+                    </aura:set>
+                </lightning:accordionSection>
+                <lightning:accordionSection name="versionHistory" label="Visa Invite History" class="blue-border">
+                    <aura:set attribute="body">
+                        <aura:if isTrue="{!not(empty(v.versionHistoryListData))}">
+                            <div style="height: 200px">
+                                <lightning:datatable aura:id="versionHistoryTable" columns="{!v.versionHistoryColumns }"
+                                    data="{!v.versionHistoryListData}" keyField="Id" onrowaction="{!c.handleRowAction}"
+                                    hideCheckboxColumn="true" showRowNumberColumn="true" />
+                            </div>
+                        </aura:if>
+                    </aura:set>
+                </lightning:accordionSection>
+            </div>
+        </lightning:accordion>
+    </lightning:card>
+
+    <aura:if isTrue="{!v.isAttendentModel}">
+        <c:AddAttendeeVisaInviteComp parent="{!this}" isAttendentModel="{!v.isAttendentModel}"
+            newAttendee="{!v.newAttendee}" visaInviteId="{!v.newVisaAttribute.recordId}"
+            firstAttandee="{!v.newVisaAttribute.firstAttandee}" attendantRecordType="{!v.attendantRecordType}"
+            relationOptions="{!v.relationOptions}" isDonorPresent="{!v.newVisaAttribute.isDonorPresent}"
+            initAddDonor="{!v.newVisaAttribute.initAddDonor}" />
+    </aura:if>
+
+    <aura:if isTrue="{!v.isSendEmailModel}">
+        <c:GenerateTemplateComp isSendEmailModel="{!v.isSendEmailModel}"
+            emailNotificationId="{!v.newVisaAttribute.emailNotificationId}"
+                                emailCCId="{!v.newVisaAttribute.emailCCId}"
+                                emailBCCId="{!v.newVisaAttribute.emailCCId}"
+            visaInviteId="{!v.newVisaAttribute.recordId}" 
+            visaInviteNumber="{!v.newVisaAttribute.visaInviteNum}"/>
+    </aura:if>
+
+
+</aura:component>

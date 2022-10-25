@@ -1,0 +1,167 @@
+<aura:component controller="TodayPlanApexController">
+    
+    <aura:attribute name="showCheckOutComponent" type="Boolean"  default="false"/>
+    <aura:attribute name="beatPlanDetailId" type="String" />
+    <aura:attribute name="beatDayId" type="String" />
+    <aura:attribute name="longitude" type="Decimal" />
+    <aura:attribute name="latitude" type="Decimal" />
+    <aura:attribute name="checkoutRemarks" type="String" />
+    <aura:attribute name="checkTask" type="Boolean" default="false" />
+    <aura:attribute name="checkEvent" type="Boolean" default="false" />
+    <aura:attribute name="ownerName" type="String" default="" />
+    <aura:attribute name="relatedTo" type="String" default="" />
+    <aura:attribute name="taskDueDate" type="Date" />
+    <aura:attribute name="selectedTask" type="String" default="" />
+    <aura:attribute name="eventDueDate" type="Date" />
+    <aura:attribute name="selectedEvent" type="String" default="" />
+    <aura:attribute name="todayDate" type="Date" />
+    <aura:attribute name="listTaskSubject" type="List" />
+    <aura:attribute name="listEventSubject" type="List" />
+    <aura:attribute name="showCheckout" type="Boolean" default="true" />
+    <aura:attribute name="showTask" type="Boolean" default="false" />
+    <aura:attribute name="showEvent" type="Boolean" default="false" />
+    <aura:attribute name="Address" type="String" />
+    <aura:handler name="change" value="{!v.showCheckOutComponent}" action="{!c.toggleDialog}" />
+    
+    <aura:registerEvent name="startDayEvent" type="c:ConfirmStartDayEvent" />
+    
+    <div aura:id="editDialog" role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal">
+        <div class="slds-modal__container">
+            <lightning:spinner aura:id="spinner" variant="brand" class="slds-hide" />
+            <div class="slds-modal__header">
+                <button class="slds-button slds-modal__close " title="Close" onclick="{!c.toggleDialog}">
+                    <lightning:icon iconName="utility:close" variant="bare" ></lightning:icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <aura:if isTrue="{!v.showCheckout}">
+                    <h2 class="slds-text-heading_medium">Confirm CheckOut</h2>
+                </aura:if>
+                <aura:if isTrue="{!v.showTask}">
+                    <h2 class="slds-text-heading_medium">Task Details</h2>	
+                </aura:if>
+                <aura:if isTrue="{!v.showEvent}">
+                    <h2 class="slds-text-heading_medium">Event Details</h2>	
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!v.showCheckout}" >
+                <div class="slds-modal__content slds-p-around_medium slds-grid slds-wrap slds-grid_align-spread">
+                   <br/>
+                    <center>Are you sure you want to checkout for this Visit?</center>
+                    <br/>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium slds-grid slds-wrap slds-grid_align-spread">
+                        <br/>
+                 <b> {!v.Address} </b>
+                    <br/>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium slds-grid slds-wrap slds-grid_align-spread">
+                    <br/>
+                    <center><ui:inputTextArea aura:id="comments" label="Remarks" value="{!v.checkoutRemarks}" rows="2"/></center>
+                    <br/>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                    <center>
+                        <span style="display:none;color:red;" id="errorNew">Please Fill Remarks</span>
+                    </center>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                    <center>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning:input type="checkbox" label="Create Task" checked="{!v.checkTask}" name="input1"/>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning:input type="checkbox" label="Create Event" checked="{!v.checkEvent}" name="input2"/>
+                            </div>
+                        </div>
+                    </center>
+                </div>
+                <div class="slds-modal__footer">
+                      <button class="slds-button slds-button_brand" onclick="{!c.saveData}">Retry</button>
+                    <button class="slds-button slds-button_neutral" onclick="{!c.toggleDialog}">Cancel</button>
+                    <aura:if isTrue="{!or(v.checkTask,v.checkEvent)}">
+                        <aura:set attribute="else">
+                            <button class="slds-button slds-button_brand" onclick="{!c.doSave}">Proceed</button>	
+                        </aura:set>
+                        <button class="slds-button slds-button_neutral" onclick="{!c.confirmCheckOut}">Next</button>
+                    </aura:if>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{!v.showTask}" >
+                <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:select name="taskId" label="Task Subject" aura:id="taskId" value="{!v.selectedTask}" required="true" messageWhenValueMissing="Task Subject is required">
+                                <option value="">---None---</option>
+                                <aura:iteration items="{!v.listTaskSubject}" var="option">
+                                    <option value="{!option}">{!option}</option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input type="Date" aura:id="taskDateId" value="{!v.taskDueDate}" label="Task Due Date" min="{!v.todayDate}" required="true" messageWhenValueMissing="Task Date is required"/>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input type="text" value="{!v.relatedTo}" disabled="true" label="Related To"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input type="text" value="{!v.ownerName}" disabled="true" label="Assigned To"/>
+                        </div>
+                    </div>
+                    <br/>
+                    
+                    <div class="slds-modal__footer">
+                        <lightning:button label="Cancel" onclick="{!c.toggleDialog}"/>
+                            <lightning:button onclick="{!c.doBack}" label="Back"/>
+                            <aura:if isTrue="{!v.checkEvent}" >
+                                <lightning:button onclick="{!c.doNext}" label="Next" />	
+                            </aura:if>
+                            <aura:if isTrue="{!!v.checkEvent}" >
+                                <lightning:button onclick="{!c.doSave}" variant="brand" label="Proceed" />
+                            </aura:if>
+                    </div>
+                </div>
+            </aura:if>
+            
+            
+            <aura:if isTrue="{!v.showEvent}" >
+                <div class="slds-modal__content slds-p-around_medium slds-grid_align-spread">
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:select name="eventId" label="Event Subject" aura:id="eventId" value="{!v.selectedEvent}" required="true" messageWhenValueMissing="Event Subject is required">
+                                <option value="">---None---</option>
+                                <aura:iteration items="{!v.listEventSubject}" var="option">
+                                    <option value="{!option}">{!option}</option>
+                                </aura:iteration>
+                            </lightning:select>    
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input aura:id="eventDateId" type="Date" value="{!v.eventDueDate}" label="Event Due Date" min="{!v.todayDate}" required="true" messageWhenValueMissing="Event Date is required"/>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input type="text" value="{!v.relatedTo}" disabled="true" label="Related To"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:input type="text" value="{!v.ownerName}" disabled="true" label="Assigned To"/>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.toggleDialog}">Cancel</button>
+                        <button class="slds-button slds-button_neutral" onclick="{!c.doBackEvent}">Back</button>
+                        <button class="slds-button slds-button_brand" onclick="{!c.doSave}">Proceed</button>
+                    </div>
+                </div>
+            </aura:if>
+            
+            
+        </div>
+    </div>
+    
+    <div aura:id="overlay" class="slds-backdrop"></div>
+</aura:component>

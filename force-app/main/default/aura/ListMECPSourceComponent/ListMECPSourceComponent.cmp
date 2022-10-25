@@ -1,0 +1,72 @@
+<aura:component controller="PreIntimationTaggingApex">
+    
+    <aura:attribute name="mecpName" type="String" default="" />
+    <aura:attribute name="listMECP" type="List" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:registerEvent name="appEvent" type="c:PassMECPId"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" />
+    
+    <lightning:card title="MECP Source" iconName="standard:account">
+        <aura:if isTrue="{!v.listMECP.length > 0}" >
+            <aura:set attribute="else">
+                <div class="slds-p-left_small" style="color:red;">No Mecp Source Found</div>
+            </aura:set>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Account Name">Account Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Owner">Owner</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Territory">Territory</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Account ID">Account ID</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Account Type">Account Type</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Main Phone">Main Phone</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.listMECP}" var="item" >
+                        <tr class="slds-hint-parent">
+                            <th data-label="Account Name" scope="row">
+                                <div class="slds-grow slds-cell-wrap" title="Account Name">
+                                    <div onclick="{!c.getAccountId}" class="redirectlink" id="{!item.Id}" style="{!item.Name}">{!item.Name}</div>
+                                </div>
+                            </th>
+                            <td data-label="Owner">
+                                <div class="slds-grow slds-cell-wrap" title="Owner">{!item.Owner.Name}</div>
+                            </td>
+                            <td data-label="Territory">
+                                <div class="slds-grow slds-cell-wrap" title="Territory">{!item.Account_Territory__r.Name}</div>
+                            </td>
+                            <td data-label="Account ID">
+                                <div class="slds-grow slds-cell-wrap" title="Account ID">{!item.AccountNumber}</div>
+                            </td>
+                            <td data-label="Account Type">
+                                <div class="slds-grow slds-cell-wrap" title="Account Type">{!item.Type}</div>
+                            </td>
+                            <td data-label="Main Phone">
+                                <div class="slds-grow slds-cell-wrap" title="Main Phone">{!item.Phone}</div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </aura:if>    
+    </lightning:card>
+    
+</aura:component>

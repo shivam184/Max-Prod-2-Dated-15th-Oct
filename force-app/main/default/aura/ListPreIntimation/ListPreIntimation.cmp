@@ -1,0 +1,69 @@
+<aura:component controller="ListPreIntimationApex" implements="force:appHostable">
+    
+    <aura:attribute name="listLead" type="List" />
+    <aura:attribute name = "selectedDate" type = "date" default=""/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:spinner aura:id="mySpinner" size="medium" variant="brand" class="slds-hide" />
+    
+    <ui:scrollerWrapper  class="scrollerSize">
+    <lightning:card title="Pre-Intimations" iconName="standard:lead" >
+        <div class="slds-p-around_small slds-small-size_1-of-1 slds-medium-size_1-of-3 slds-large-size_1-of-5">
+            <lightning:input type="date" aura:id="dateSelected"  label="Select date" value="{!v.selectedDate}" onchange="{!c.doInit}"/>
+        </div>
+        <aura:set attribute="actions" >
+            
+            
+        </aura:set>
+        
+        <aura:if isTrue="{!v.listLead.length > 0}">
+            <aura:set attribute="else">
+                <div class="slds-p-left_small" style="color:red;">
+                    No Pre-Intimation Found
+                </div>
+                
+            </aura:set>
+            
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Name">Patient Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Created Date">Created Date/Time</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="MECP Source">MECP Source/Name</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.listLead}" var="item">
+                        <tr class="slds-hint-parent">
+                            <th data-label="Name" scope="row">
+                                <div class="slds-grow slds-cell-wrap" title="Name">
+                                   <!-- <lightning:formattedUrl value="{!'/lightning/r/Beat_Plan_Detail__c/'+item.Id+'/view'}"  label="{!if(item.Account__c != NULL,item.Account__r.Name,item.Contact__r.Name)}" target="_blank" />-->
+                                
+                                    <div onclick="{!c.openInNewtab}" class="redirectlink" id="{!item.Id}">{!item.Name}</div>
+                                </div>
+                            </th>
+                            <td data-label="Created Date">
+                                <div class="slds-grow slds-cell-wrap" title="Created Date">
+                                    
+                                    <lightning:formattedDateTime value="{!item.CreatedDate}" year="numeric" month="numeric" day="numeric" hour="2-digit"
+                                 minute="2-digit"  hour12="false"/>
+                                </div>
+                            </td>
+                            <td data-label="MECP Source/Name">
+                                <div class="slds-grow slds-cell-wrap" title="MECP Source/Name">{!if(item.MECP_Source__c != NULL,item.MECP_Source__c,item.MECP_Name__r.Name)}</div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </aura:if>
+    </lightning:card>
+    </ui:scrollerWrapper>
+</aura:component>

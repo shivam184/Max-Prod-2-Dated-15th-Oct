@@ -1,0 +1,150 @@
+<apex:page controller="MTDReportVfpageController" sidebar="false" showHeader="false" contentType="application/vnd.ms-excel#MTD_Report_month_{!selectedMonth}_year_{!selectedYear}.xls" >
+    
+    <style>
+        .slds-scope td {
+        text-align: center;
+        }
+        th{text-align:center;}
+        
+        .grandTotal{background-color:#EBEDEF;}
+    </style>
+   
+    <!--<div class="slds-spinner_container slds-show" id="spinner">
+        <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+            <span class="slds-assistive-text">Loading</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>-->
+    
+    
+    <div style="background-color:#fff;overflow-x:scroll;" class="slds-box">
+        
+        <table class="slds-table slds-table_bordered slds-table_col-bordered slds-p-around_small slds-border_left slds-border_right" >
+            <thead>
+                <tr >
+                    
+                    <th style="text-align:center;background-color:rgb(11,84,83);color:rgb(255,255,255);" >
+                        Channel Location
+                    </th>
+                    <apex:repeat value="{!dataWrp.zoneToUnitsMap}" var="zone">
+                        <apex:repeat value="{!dataWrp.zoneToUnitsMap[zone]}" var="unit">
+                            <th colspan="3" style="text-align:center;background-color:rgb(11,84,83);color:rgb(255,255,255);" >
+                                {!unit}
+                            </th>
+                            
+                        </apex:repeat>
+                        
+                        <th colspan="3" class="grandTotal">
+                            {!zone} Total
+                        </th>
+                        
+                    </apex:repeat>
+                    <th colspan="3" >
+                        Channel Total
+                    </th>
+                </tr>
+                <tr>
+                    <th style="text-align:center;">
+                        All Figures in Lacs
+                    </th>
+                    <apex:repeat value="{!dataWrp.zoneToUnitsMap}" var="zone">
+                        <apex:repeat value="{!dataWrp.zoneToUnitsMap[zone]}" var="unit">
+                            <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                                <th style="text-align:center;">
+                                    {!rt}
+                                </th>
+                            </apex:repeat>
+                        </apex:repeat>
+                        
+                        <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                            <th style="text-align:center;" class="grandTotal">
+                                {!rt}
+                            </th>
+                            
+                        </apex:repeat>
+                        
+                    </apex:repeat>
+                    <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                        <th style="text-align:center;" >
+                            {!rt}
+                        </th>
+                    </apex:repeat>
+                </tr>
+                
+            </thead>
+            <tbody>
+                <apex:repeat value="{!picklistWrp.channelList}" var="ch">
+                    <tr>
+                        <td>
+                            {!ch}
+                        </td>
+                        <apex:repeat value="{!dataWrp.zoneToUnitsMap}" var="zone">
+                            
+                            <apex:repeat value="{!dataWrp.zoneToUnitsMap[zone]}" var="unit">
+                                <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                                    <td id="{!(zone+'@@'+ch+'@@'+unit+'@@'+rt)}">
+                                        <apex:outputText value="{!ROUND(dataWrp.finalDataMap[zone+'@@'+ch+'@@'+unit+'@@'+rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,zone+'@@'+ch+'@@'+unit+'@@'+rt),true,false)}" /> 
+                                    </td>
+                                </apex:repeat>
+                                
+                            </apex:repeat>
+                            <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                                <td id="{!(zone+'@@'+ch+'@@'+rt)}" class="grandTotal">
+                                    <apex:outputText value="{!ROUND(dataWrp.finalDataMap[zone+'@@'+ch+'@@'+rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,zone+'@@'+ch+'@@'+rt),true,false)}" /> 
+                                </td>
+                                
+                            </apex:repeat>
+                           
+                        </apex:repeat>
+                        <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                            <td id="{!(ch+'@@'+rt)}" >
+                                <apex:outputText value="{!ROUND(dataWrp.finalDataMap[ch+'@@'+rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,ch+'@@'+rt),true,false)}" />
+                            </td>
+                        </apex:repeat>
+                    </tr>
+                    
+                </apex:repeat>
+                <tr>
+                    <th style="text-align:center;background-color:rgb(11,84,83);color:rgb(255,255,255);">Location Total</th>
+                    <apex:repeat value="{!dataWrp.zoneToUnitsMap}" var="zone">
+                        <apex:repeat value="{!dataWrp.zoneToUnitsMap[zone]}" var="unit">
+                            <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                                 <th id="{!(zone+'@@'+unit+'@@'+rt)}"  style="text-align:right;background-color:rgb(11,84,83);color:rgb(255,255,255);">
+                                    <apex:outputText value="{!ROUND(dataWrp.finalDataMap[zone+'@@'+unit+'@@'+rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,zone+'@@'+unit+'@@'+rt),true,false)}" />
+                                </th>
+                            </apex:repeat>
+                        </apex:repeat>
+                        <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                            <th id="{!(zone+'@@'+rt)}" class="grandTotal" style="text-align:right;">
+                            	<apex:outputText value="{!ROUND(dataWrp.finalDataMap[zone+'@@'+rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,zone+'@@'+rt),true,false)}" />
+                            </th>
+                        </apex:repeat>
+                        
+                    </apex:repeat> 
+                    <apex:repeat value="{!picklistWrp.recordTypeList}" var="rt">
+                        <th id="{!(rt)}" style="text-align:right;">
+                        	<apex:outputText value="{!ROUND(dataWrp.finalDataMap[rt],0)}"
+                                                         rendered="{!IF(CONTAINS(dataWrp.finalMapKeys,rt),true,false)}" />
+                        </th>
+                    </apex:repeat>
+                    
+                </tr>
+            </tbody>
+        </table>
+    </div>
+        
+    <!--<div class="slds-text-align_center slds-m-around_small">
+        <apex:commandButton value="Download" styleClass="slds-button slds-button_success" action="/apex/MTDReportDownload" />
+    </div>-->
+    
+    
+    
+    
+
+</apex:page>

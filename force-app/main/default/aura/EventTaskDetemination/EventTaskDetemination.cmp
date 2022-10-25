@@ -1,0 +1,90 @@
+<aura:component controller="EventTaskController" implements="force:appHostable,force:hasRecordId" >
+    
+    <aura:attribute name="edate" type="date" />    
+    <aura:attribute name="wrapET" type="object" />   
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:spinner variant="brand" size="medium" aura:id="mySpinner" class="slds-hide" />
+    
+    <lightning:card title="Tasks And Events">        
+        <div class="slds-p-horizontal_medium">
+            <div class="slds-size--1-of-1">
+                <lightning:input type="date" label="Date" value="{!v.edate}" onchange="{!c.doSearch}" min="{!v.edate}"/>           
+            </div>        
+        </div>    
+    </lightning:card>
+    
+    
+    <lightning:card title="Today's Events" iconName="standard:event">
+        <aura:if isTrue="{!v.wrapET.EWrapList.length > 0}" > 
+            <aura:set attribute="else" >
+                <div class="slds-p-left_small" style="color:FireBrick;">
+                    No Events Found
+                </div>
+            </aura:set>
+            <div class="slds-p-left_large">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer slds-max-medium-table--stacked-horizontal"  >
+                    <thead>
+                        <tr class="slds-text-title_caps">                        
+                            <th scope="col">
+                                <div class="slds-truncate" title="Subject">Subject</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Related To">Related To</div>
+                            </th>                                                                    
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration indexVar="sno" items="{!v.wrapET.EWrapList}" var="e">                        
+                            <tr>                                
+                                <th data-label="Subject">
+                                    <div class="slds-truncate" title="{!e.Subject}">{!e.Subject}</div>
+                                </th>                               
+                                <th data-label="Related To">
+                                    <div class="slds-truncate" title="{!e.What.Name}">{!e.What.Name}</div>
+                                </th>                                                                    
+                            </tr>                        
+                        </aura:iteration>
+                    </tbody>
+                </table>          
+            </div>
+        </aura:if>
+    </lightning:card>                    
+    
+    <lightning:card title="Today's Tasks" iconName="standard:task">
+        <aura:if isTrue="{!v.wrapET.EWrapList.length > 0}" > 
+            <aura:set attribute="else" >
+                <div class="slds-p-left_small" style="color:FireBrick;">
+                    No Tasks Found
+                </div>
+            </aura:set>        
+            <div class="slds-p-left_large">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer slds-max-medium-table--stacked-horizontal"  >
+                    <thead>
+                        <tr class="slds-text-title_caps">                        
+                            <th scope="col">
+                                <div class="slds-truncate" title="Subject">Subject</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Related To">Related To</div>
+                            </th>                                                                    
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration indexVar="sno" items="{!v.wrapET.TWrapList}" var="t">                        
+                            <tr>                                
+                                <th data-label="Subject">
+                                    <div class="slds-truncate" title="{!t.Subject}">{!t.Subject}</div>
+                                </th>                               
+                                <th data-label="Related To">
+                                    <div class="slds-truncate" title="{!t.What.Name}">{!t.What.Name}</div>
+                                </th>                                                                    
+                            </tr>                        
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+        </aura:if>
+    </lightning:card>                
+</aura:component>

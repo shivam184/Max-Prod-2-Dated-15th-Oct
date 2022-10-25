@@ -1,0 +1,23 @@
+<aura:component controller="AddFamilyMemberApex">
+    
+    <ltng:require afterScriptsLoaded="{!c.Init}"/>
+    <aura:attribute name="showCanvas" type="Boolean" default="true"/>
+    <aura:attribute name="showDialog" type="String" default="false"/>
+    
+    <aura:handler name="clearEvent" event="c:Clear_Sign" action="{!c.erase}"/>
+    
+    
+    <aura:if isTrue="{!v.showCanvas}">
+        <div class="slds-p-horizontal_medium">
+            <div class="slds-p-top_medium"/>
+            <div class="slds-align_absolute-center" >
+                <canvas aura:id="can" style="border:2px solid #ddd;background: transparent;"></canvas>
+            </div>
+            <div class="slds-p-top_medium"/>
+            <div class="slds-align_absolute-center">
+                <lightning:button label="Clear" onclick="{!c.confirmClear}"/>
+            </div>
+        </div>
+        <c:ClearSignature showDialog="{!v.showDialog}"/>
+    </aura:if>
+</aura:component>

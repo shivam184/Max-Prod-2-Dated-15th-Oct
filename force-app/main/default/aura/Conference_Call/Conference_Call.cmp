@@ -1,0 +1,25 @@
+<aura:component controller="callDoctorPatient" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--<aura:attribute name="success" type="boolean" default="false" />
+    <aura:attribute name="message" type="String" default="Calling to Doctor than Patient" />
+    
+    <aura:if isTrue="{!v.success}">
+        {!v.message}
+        <aura:set attribute="else">
+            Processing
+        </aura:set>
+    </aura:if> 
+    
+    <aura:html tag="style">
+        button[name="Max_at_Home_Enquiry_Page__c.Generate_Payment_Link"] {
+        visibility: hidden;
+        }
+        button[disabled]{
+        border: 1px solid #999999;
+        background-color: #cccccc;
+        color: #666666;
+        }
+    </aura:html>-->
+    
+</aura:component>

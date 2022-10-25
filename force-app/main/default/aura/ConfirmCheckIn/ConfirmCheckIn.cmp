@@ -1,0 +1,38 @@
+<aura:component controller="TodayPlanApexController">
+    <aura:attribute name="showConfirmCheckInComponent" type="Boolean"  default="false"/>
+    <aura:attribute name="beatPlanDetailId" type="String" />
+    <aura:attribute name="longitude" type="Decimal" />
+    <aura:attribute name="latitude" type="Decimal" />
+    <aura:attribute name="beatDayId" type="String" />
+    <aura:attribute name="Address" type="String" />
+    <aura:handler name="change" value="{!v.showConfirmCheckInComponent}" action="{!c.toggleDialog}" />
+    
+    <aura:registerEvent name="startDayEvent" type="c:ConfirmStartDayEvent" />
+    
+    <div aura:id="editDialog" role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal">
+        <lightning:spinner aura:id="spinner" variant="brand" class="slds-hide" />
+        <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <button class="slds-button slds-modal__close " title="Close" onclick="{!c.toggleDialog}">
+                    <lightning:icon iconName="utility:close" variant="bare" ></lightning:icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 class="slds-text-heading_medium">Confirm Checkin</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around_medium slds-grid slds-wrap slds-grid_align-spread">
+                
+                Are you sure you want to checkin for this Visit?
+                <br/><br/>
+                
+                <br/><b>{!v.Address}</b>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_brand" onclick="{!c.saveData}">Retry</button>
+                <button class="slds-button slds-button_neutral" onclick="{!c.toggleDialog}">Cancel</button>
+                <button class="slds-button slds-button_brand" onclick="{!c.confirmCheckIn}">Proceed</button>
+            </div>
+        </div>
+    </div>
+    <div aura:id="overlay" class="slds-backdrop"></div>
+    
+</aura:component>

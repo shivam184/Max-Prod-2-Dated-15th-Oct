@@ -1,0 +1,131 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId,flexipage:availableForRecordHome,flexipage:availableForAllPageTypes" access="global" controller="AddFamilyMemberApex">
+    
+    <aura:html tag="style">
+        .slds-modal__container {
+            max-width: 50%;
+            width: 50% !important;
+            height: 100% !important;
+        }
+    </aura:html>
+    
+    
+    <aura:attribute name="isDesktop" type="Boolean" default="true" /> 
+    <aura:attribute name="lead" type="Lead__c" default="{'sobjectType':'Lead__c'}" /> 
+    <aura:attribute name="primaryMemberId" type="String"/>
+    <aura:attribute name="primaryMemberEnrolmentType" type="String"/>
+	<aura:attribute name="insuranceList" type="List" /> 
+    
+    <aura:attribute name="listGender" type="List" />
+    
+    <aura:attribute name="leadPhone" type="String"/>
+    <aura:attribute name="patietnWrapper" type="Object"/>
+    <aura:attribute name="errorMsg" type="String"/>
+    <aura:attribute name="sucessMsg" type="String"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.leadPhone}" action="{!c.doCheckMobileNumber}" />
+    
+    <aura:attribute name="showSpinner" type="Boolean" default="false"/>
+    
+    
+    
+    
+    <lightning:card title="Add Family Member" iconName="utility:user">
+        <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" />
+        </aura:if>
+        <aura:set attribute="actions">
+            <aura:if isTrue="{!v.isDesktop}">
+                <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                <lightning:button label="Save" accesskey="save" variant="brand" onclick="{!c.doSave}"/>
+                <aura:if isTrue="{!v.primaryMemberEnrolmentType=='Healthy Family'}">
+                    <lightning:button label="Save &amp; Add" accesskey="savenadd" variant="brand" onclick="{!c.doSave}"/>
+                </aura:if>
+            </aura:if>
+        </aura:set>
+        
+        <aura:set attribute="footer" >
+            <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+            <lightning:button label="Save" accesskey="save" variant="brand" onclick="{!c.doSave}"/>
+            <aura:if isTrue="{!v.primaryMemberEnrolmentType=='Healthy Family'}">
+                <lightning:button label="Save &amp; Add" accesskey="savenadd" variant="brand" onclick="{!c.doSave}"/>    
+            </aura:if>
+        </aura:set>
+        
+        <aura:if isTrue="{!v.errorMsg.length>0}">
+            <ui:message title="Error" severity="error" closable="false">
+                {!v.errorMsg}
+            </ui:message>
+        </aura:if>
+        <aura:if isTrue="{!v.sucessMsg.length>0}">
+            <ui:message title="Success" severity="confirm" closable="true">
+                {!v.sucessMsg}
+            </ui:message>
+        </aura:if>
+        
+        <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input type="tel" maxlength="10"  aura:id="mobile" label="Mobile Number" value="{!v.leadPhone}"  required="true" messageWhenValueMissing="Please Fill Mobile Number" />  
+            </div>
+            <aura:if isTrue="{!v.patietnWrapper.isSuccess}">
+                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                    
+                    <lightning:input type="checkbox" aura:id="existingContact" label="Existing Member" checked="{!v.patietnWrapper.isExisiting}" disabled="true"/>  
+                </div>
+                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                    <lightning:input type="checkbox" aura:id="newContact" label="New Contact" checked="{!v.patietnWrapper.isNewPat}" disabled="true"/>  
+                </div>
+                <div class="slds-col slds-size_1-of-3 slds-p-top--small">
+                    <lightning:input type="checkbox" class="{!v.patietnWrapper.isNewPat ? 'slds-hide' : ''}" onchange="{!c.handleNewChange}" aura:id="newExisting" label="New Contact With Existing Mobile" checked="{!v.patietnWrapper.isExistButNewPat}" />  
+                </div>
+            </aura:if>
+            
+            
+            
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input label="MAX ID" value="{!v.lead.Max_ID__c}" disabled="true" class="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.moreThanOnePat) ? '' : 'slds-hide'}"/> 
+                <lightning:select label="Max ID" aura:id="maxid" onchange="{!c.populateSelectedPat}" class="{!and(v.patietnWrapper.isExisiting,v.patietnWrapper.moreThanOnePat) ? '' : 'slds-hide'}" value="{!v.lead.Max_ID__c}" required="true" >
+                    <option value="">-- None --</option>
+                    <aura:iteration items="{!v.patietnWrapper.maxIdwrap}" var="option">
+                        <option text="{!option.patLabel}" value="{!option.maxId}"/>
+                    </aura:iteration>
+                </lightning:select>  
+            </div>                                                
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input aura:id="firstName" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="First Name" value="{!v.lead.First_Name__c}" required="true" messageWhenValueMissing="Please Fill First Name"/>  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input aura:id="mname" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" label="Middle Name" value="{!v.lead.Middle_Name__c}"/>  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input  aura:id="surName" disabled="{!and(v.patietnWrapper.isExisiting,!v.patietnWrapper.isExistButNewPat)}" label="Surname" messageWhenPatternMismatch="Only alphabets are allowed" pattern="^[a-zA-Z ]+$" value="{!v.lead.Last_Name__c}" required="true" messageWhenValueMissing="Please Fill Surname"/>  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:select name="gender" label="Gender" aura:id="gender" value="{!v.lead.Gender__c}" required="true" messageWhenValueMissing="Please Select Gender">
+                    <option value="">-- None --</option>
+                    <aura:iteration items="{!v.listGender}" var="option">
+                        <option text="{!option}" value="{!option}"/>
+                    </aura:iteration>
+                </lightning:select>   
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input type="Date" aura:id="dob" label="Date Of Birth" placeholder="dd/mm/yyyy" value="{!v.lead.DOB__c}" onchange="{!c.handleChangeDob}" max="{!v.maxDate}"/>  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input required="true" type="number" onkeyup="{!c.handleChangeAge}" aura:id="Age" label="Age" value="{!v.lead.CMP_Age__c}" />  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:input label="Email ID" value="{!v.lead.Email__c}" type="email" messageWhenTypeMismatch="Invalid Email ID"/>  
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:select   label="Insurance Details" aura:id="insurance" value="{!v.lead.Insurance_Details__c}">
+                    <option value="">-- None --</option>
+                    <aura:iteration items="{!v.insuranceList}" var="option">
+                        <option text="{!option}" value="{!option}"/>
+                    </aura:iteration>
+                </lightning:select>   
+            </div>
+        </div>
+        
+    </lightning:card>	
+</aura:component>

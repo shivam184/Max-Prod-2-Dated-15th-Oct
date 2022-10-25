@@ -1,0 +1,61 @@
+<aura:component controller="MTDReportVfpageController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+	
+
+    
+    <aura:attribute name="startDate" type="Date" />
+    <aura:attribute name="endDate" type="Date" />
+    <aura:attribute name="selectedMonth" type="String" />
+    <aura:attribute name="selectedYear" type="String" />
+    <aura:attribute name="selectedMonthList" type="List" />
+    <aura:attribute name="selectedYearList" type="List" />
+   <aura:handler name="init" value="{!this}" action="{!c.doInIt}" /> 
+    <lightning:card>
+        <aura:set attribute="title">
+        	<div class="slds-align_absolute-center">
+            	<b>Report Generator</b>
+            </div>
+        </aura:set>
+        
+        <aura:set attribute="footer">
+            <aura:if isTrue="{!and( not(empty(v.selectedMonth)),not(empty(v.selectedYear)))}">
+            <lightning:button variant="brand" label="Generate" onclick="{!c.generateReport}"/>
+            </aura:if>
+        </aura:set>
+            
+        <p class="slds-p-horizontal_small slds-m-top_medium">
+             <div class="slds-align_absolute-center" >
+            <lightning:layoutItem size="5">
+                
+
+           <lightning:select name="VIL" label="Select Month" aura:id="vilID" value="{!v.selectedMonth}" required="true">
+           <option value="">Choose month...</option>
+            <aura:iteration items="{!v.selectedMonthList}" var="item">
+                <option value="{!item}">
+                    {!item}
+                </option>
+            </aura:iteration>
+             </lightning:select>	
+                
+                
+
+               
+                
+                    <!-- <lightning:input type="date" value="{!v.startDate}" label="Start Date" required="true" /> -->
+            </lightning:layoutItem>
+            </div>
+            <div class="slds-align_absolute-center">
+             <lightning:layoutItem size="5">
+                        <lightning:select name="VIL" label="Select Year"  value="{!v.selectedYear}" required="true">
+           <option value="">Choose year...</option>
+            <aura:iteration items="{!v.selectedYearList}" var="opt">
+                <option value="{!opt}">
+                    {!opt}
+                </option>
+            </aura:iteration>
+             </lightning:select>  
+                <!--    <lightning:input type="date" value="{!v.endDate}" label="End Date" required="true" /> -->
+            </lightning:layoutItem>
+            </div>
+        </p>
+    </lightning:card>
+</aura:component>

@@ -1,0 +1,42 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" >
+    
+    <aura:attribute name="record" type="Object"/>
+    <aura:attribute name="simpleRecord" type="Object"/>
+    <aura:attribute name="recordError" type="String"/>
+    <aura:attribute name="currentStage" type="String"/>
+    
+    <aura:attribute name="isLoggedInUserAsOwner" type="Boolean" default="true"/>
+    <aura:attribute name="loggedInUserId" type="String"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      targetFields="{!v.simpleRecord}"
+                      targetError="{!v.recordError}"
+                      recordUpdated="{!c.handleRecordUpdated}"
+                      layoutType="FULL"
+                      />
+    
+    <lightning:card title="">
+        <aura:if isTrue="{!v.currentStage!='Closed Lost'}">
+            <lightning:progressIndicator currentStep="{!v.currentStage}" type="path" variant="base">
+                <lightning:progressStep label="Admission Advised" value="Admission Advised"/>
+                <lightning:progressStep label="Discussion In Progress" value="Discussion In Progress"/>
+                <lightning:progressStep label="Admission Confirmed by Patient" value="Admission Confirmed by Patient"/>
+                <lightning:progressStep label="Patient Admitted" value="Patient Admitted"/>
+                <lightning:progressStep label="Patient Discharged" value="Patient Discharged"/>
+            </lightning:progressIndicator>
+        </aura:if>
+        <aura:if isTrue="{!v.currentStage=='Closed Lost'}">
+            <lightning:progressIndicator currentStep="{!v.currentStage}" type="path" variant="base">
+                <lightning:progressStep label="Admission Advised" value="Admission Advised"/>
+                <lightning:progressStep label="Discussion In Progress" value="Discussion In Progress"/>
+                <lightning:progressStep label="Admission Confirmed by Patient" value="Admission Confirmed by Patient"/>
+                <lightning:progressStep label="Patient Admitted" value="Patient Admitted"/>
+                <lightning:progressStep label="Patient Discharged" value="Patient Discharged"/>
+                <lightning:progressStep label="Closed Lost" value="Closed Lost"/>
+            </lightning:progressIndicator>
+        </aura:if>
+    </lightning:card>
+</aura:component>

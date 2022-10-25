@@ -1,0 +1,312 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction"
+                controller="TaskAssigningApexController" access="global" >
+    <aura:attribute name="selectedDoc" type="String"/>
+    <aura:attribute name="selectedNurse" type="String"/>
+    <aura:attribute name="selectedLead" type="String"/>
+    <aura:attribute name="selectedDocForSearch" type="String"/>
+    <aura:attribute name="unassignedPatientsList" type="List"/>
+    <aura:attribute name="assignedPatientsList" type="List"/>
+    <aura:attribute name="unassignedLeadTableColumns" type="List"/>
+    <aura:attribute name="assignedLeadTableColumns" type="List"/>
+    <aura:attribute name="selectedUnassignedPatientTable" type="List"/>
+    <aura:attribute name="selectedAssignedPatientTable" type="List"/>
+    <aura:attribute name="showUnassignedButtons" type="Boolean" default="true"/>
+    <aura:attribute name="startDate" type="Date"/>
+    <aura:attribute name="endDate" type="Date"/>
+    <aura:attribute name="DoctorRecType" type="string" default="Max@Home Doctor"/>
+    <aura:attribute name="NurseRecType" type="string" default="Max@Home Nurse"/>
+    <aura:attribute name="docFrequency" type="String"/>
+    <aura:attribute name="docVisits" type="String"/>
+    <aura:attribute name="nurseFrequency" type="String"/>
+    <aura:attribute name="nurseVisits" type="String"/>
+    <aura:attribute name="timeValues" type="List"/>
+    <aura:attribute name="docVisitTime1" type="Time"/>
+    <aura:attribute name="docVisitTime2" type="Time"/>
+    <aura:attribute name="nurseVisitTime1" type="Time"/>
+    <aura:attribute name="nurseVisitTime2" type="Time"/>
+    <aura:attribute name="nurseVisitTime3" type="Time"/>
+    <aura:attribute name="isModalOpen" type="Boolean"/>
+    <aura:attribute name="searchDate" type="Date"/>
+    <aura:attribute name="patientNameForSearch" type="String"/>
+    <aura:attribute name="phoneForSearch" type="String"/>
+    <aura:attribute name="searchDateAssigned" type="Date"/>
+    <aura:attribute name="selectedDocForSearchAssigned" type="String"/>
+    <aura:attribute name="patientNameForSearchAssigned" type="String"/>
+    <aura:attribute name="phoneForSearchAssigned" type="String"/>
+    <aura:attribute name="serviceStartDate" type="Date"/>
+    <aura:attribute name="serviceEndDate" type="Date"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="IsDisabled" type="boolean" default="FALSE"/>
+    
+    
+
+    
+    <div class="slds-box slds-theme_default"> 
+        <div class=" slds-scrollable_y" style="height:80vh;">
+            <div class="slds-grid slds-wrap slds-gutters slds-p-top_small">
+                <div class="slds-col slds-size_1-of-7  ">
+                    <aura:if isTrue="{!!v.showUnassignedButtons}">
+                        <div >
+                            <c:strike_lookup
+                                                     object="Account"
+                                                     searchField="Name"
+                                                     placeholder="Select an option"
+                                                     iconName="standard:account"
+                                                     value="{!v.selectedDoc}"
+                                             		 subtitleField="Patient_Count__c"
+                                                     filter="{!'Recordtype.Name = \'' + v.DoctorRecType + '\''}"
+                                                     order="Name"
+                                                     aura:id="revenueval"
+                                                     showRecentRecords = "true"
+                                                     loadingMessage="Loading..."
+                                                     errorMessage="Invalid input"
+                                                     label="Doctor"
+                                                     required="true"
+                                                     />
+                            <c:strike_lookup
+                                                 object="Account"
+                                                 searchField="Name"
+                                                 placeholder="Select an option"
+                                                 iconName="standard:account"
+                                                 value="{!v.selectedNurse}"
+                                                 subtitleField="Patient_Count__c"
+                                                 filter="{!'Recordtype.Name = \'' + v.NurseRecType + '\''}"
+                                                 order="Name"
+                                                 aura:id="revenueval"
+                                                 showRecentRecords = "true"
+                                                 loadingMessage="Loading..."
+                                                 errorMessage="Invalid input"
+                                                 label="Nurse"
+                                                 required="true"
+                                                 />
+                        </div>
+                    </aura:if>
+                </div>
+                
+                <div class="slds-col slds-size_5-of-7  ">
+                    <lightning:tabset variant="scoped">
+                        <lightning:tab label="Unassigned Leads" onactive="{!c.unassignedTabValues}">
+                            <div class="slds-grid slds-wrap slds-gutters slds-p-top_small">
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input type="date" name="date1" label="Select a date" value="{!v.searchDate}"  />
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <c:strike_lookup
+                                                     object="Account"
+                                                     searchField="Name"
+                                                     placeholder="Select an option"
+                                                     iconName="standard:account"
+                                                     value="{!v.selectedDocForSearch}"
+                                                     subtitleField="Patient_Count__c"
+                                                     filter="{!'Recordtype.Name = \'' + v.DoctorRecType + '\''}"
+                                                     order="Name"
+                                                     aura:id="revenueval"
+                                                     showRecentRecords = "true"
+                                                     loadingMessage="Loading..."
+                                                     errorMessage="Invalid input"
+                                                     label="Doctor"
+                                                     required="true"
+                                                     />
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input name="inputpatientName" label="Enter Patient Name" value="{!v.patientNameForSearch}"/>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input name="inputPhoneNumber" label="Enter Phone Number" value="{!v.phoneForSearch}"/>
+                                </div>
+                            </div>
+                            <lightning:button aura:id="button" class = "slds-align_absolute-center slds-m-bottom_small slds-m-top_medium" variant="brand" label="Search"  onclick="{!c.searchLeadByDate}"  />
+                            <div >
+                                <lightning:datatable data="{! v.unassignedPatientsList }" 
+                                                     columns="{! v.unassignedLeadTableColumns }" 
+                                                     keyField="id"
+                                                     onrowselection="{!c.handleUnassignedSelect}"/>
+                            </div>
+                        </lightning:tab>
+                        <lightning:tab label="Assigned Leads" onactive="{!c.assignedTabValues}">
+                            <div class="slds-grid slds-wrap slds-gutters slds-p-top_small">
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input type="date" name="date1" label="Select a date" value="{!v.searchDateAssigned}"  />
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <c:strike_lookup
+                                                     object="Account"
+                                                     searchField="Name"
+                                                     placeholder="Select an option"
+                                                     iconName="standard:account"
+                                                     value="{!v.selectedDocForSearchAssigned}"
+                                                     subtitleField="Patient_Count__c"
+                                                     filter="{!'Recordtype.Name = \'' + v.DoctorRecType + '\''}"
+                                                     order="Name"
+                                                     aura:id="revenueval"
+                                                     showRecentRecords = "true"
+                                                     loadingMessage="Loading..."
+                                                     errorMessage="Invalid input"
+                                                     label="Doctor"
+                                                     required="true"
+                                                     />
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input name="inputpatientName" label="Enter Patient Name" value="{!v.patientNameForSearchAssigned}"/>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4  ">
+                                    <lightning:input name="inputPhoneNumber" label="Enter Phone Number" value="{!v.phoneForSearchAssigned}"/>
+                                </div>
+                                </div>
+                            <lightning:button aura:id="button" class = "slds-align_absolute-center slds-m-bottom_small slds-m-top_medium" variant="brand" label="Search"  onclick="{!c.searchLeadByDateAssigned}"  />
+                            <div >
+                            </div>
+                            <div >
+                                <lightning:datatable data="{! v.assignedPatientsList }" 
+                                                     columns="{! v.assignedLeadTableColumns }" 
+                                                     keyField="id"
+                                                     onrowselection="{!c.handleAssignedSelect}"/>
+                            </div>
+                        </lightning:tab>
+                    </lightning:tabset>
+                </div>
+                <div class="slds-col slds-size_1-of-7  ">
+                    <aura:if isTrue="{!v.showUnassignedButtons}">
+                        <lightning:button aura:id="button" class = "slds-align_absolute-left slds-m-bottom_small slds-m-top_medium" variant="brand" label="Assign Task"  onclick="{!c.openModal}"  />
+                    </aura:if>
+                    <aura:if isTrue="{!!v.showUnassignedButtons}">
+                        <lightning:button aura:id="button2" class = "slds-align_absolute-left slds-m-bottom_small slds-m-top_medium" variant="brand" label="Change Assigned Doctor"  onclick="{!c.changeDoc}"  />
+                        <lightning:button aura:id="button3" class = "slds-align_absolute-left slds-m-bottom_small slds-m-top_medium" variant="brand" label="Change Assigned Nurse"  onclick="{!c.changeNurse}"  />
+                    </aura:if>
+                </div>
+            </div>
+        </div>
+    </div>    
+    
+    <aura:if isTrue="{!v.isModalOpen}">       
+        <!-- Modal/Popup Box starts here-->
+        
+        <aura:if isTrue="{!v.spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </aura:if>
+        <br/>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box Header Starts here-->
+                <header class="slds-modal__header">   
+                    <div>
+                        <img src="{!$Resource.VisaInviteLogo}" style="height: 50px;"/>
+                    </div>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <div class="slds-grid slds-wrap slds-gutters slds-p-top_small">
+                        <div class="slds-col slds-size_2-of-5  ">
+                            <lightning:input type="date" name="date2" label="Service Start Date" value="{!v.serviceStartDate}"  />
+                        </div>
+                        <div class="slds-col slds-size_1-of-5  "/>
+                        <div class="slds-col slds-size_2-of-5  ">
+                            <lightning:input type="date" name="date3" disabled='true' label="Service End Date" value="{!v.serviceEndDate}"  />
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-gutters slds-p-top_small slds-p-bottom_medium">
+                        <div class="slds-col slds-size_2-of-5  ">
+                            <c:strike_lookup
+                                             object="Account"
+                                             searchField="Name"
+                                             placeholder="Select an option"
+                                             iconName="standard:account"
+                                             value="{!v.selectedDoc}"
+                                             subtitleField="Patient_Count__c"
+                                             filter="{!'Recordtype.Name = \'' + v.DoctorRecType + '\''}"
+                                             order="Name"
+                                             aura:id="revenueval"
+                                             showRecentRecords = "true"
+                                             loadingMessage="Loading..."
+                                             errorMessage="Invalid input"
+                                             label="Doctor"
+                                             required="true"
+                                             />
+                            <lightning:select name="select1" class="slds-p-top_small" label="Doctor Visit Frequency" value="{!v.docFrequency}" >
+                                <option value="">choose one...</option>
+                                <option value="Daily">Daily</option>
+                                <option value="Alternate day">Alternate day</option>
+                                <option value="Once in three days">Once in three days</option>
+                            </lightning:select>
+                            <lightning:select name="select2" class="slds-p-top_small" label="Number of Visits by Doctor" value="{!v.docVisits}" >
+                                <option value="">choose one...</option>
+                                <option value="1">1</option>
+                            </lightning:select>
+                            <!--lightning:input type="time" class="slds-p-top_small" name="Doctor Visit Time 1" label="Doctor Visit Time 1" value="{!v.docVisitTime1}"/-->
+                            <lightning:select name="select7" class="slds-p-top_small" label="Doctor Visit Time 1" value="{!v.docVisitTime1}" >
+                                <option value="">choose one...</option>
+                                <aura:iteration items="{!v.timeValues}" var="ind" indexVar="key">
+                                    <option value="{!ind}" text="{!ind}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                        <div class="slds-col slds-size_1-of-5  "/>
+                        <div class="slds-col slds-size_2-of-5  ">
+                                <c:strike_lookup
+                                                 object="Account"
+                                                 searchField="Name"
+                                                 placeholder="Select an option"
+                                                 iconName="standard:account"
+                                                 value="{!v.selectedNurse}"
+                                                 subtitleField="Patient_Count__c"
+                                                 filter="{!'Recordtype.Name = \'' + v.NurseRecType + '\''}"
+                                                 order="Name"
+                                                 aura:id="revenueval"
+                                                 showRecentRecords = "true"
+                                                 loadingMessage="Loading..."
+                                                 errorMessage="Invalid input"
+                                                 label="Nurse"
+                                                 required="true"
+                                                 />
+                                
+                                <lightning:select name="select3" class="slds-p-top_small" label="Nurse Visit Frequency" value="{!v.nurseFrequency}" >
+                                    <option value="">choose one...</option>
+                                    <option value="Daily">Daily</option>
+                                    <!-- option value="Alternate day">Alternate day</option>
+                                    <option value="Once in three days">Once in three days</option -->
+                                </lightning:select>
+                                <lightning:select name="select4" class="slds-p-top_small" label="Number of Visits by Nurse" value="{!v.nurseVisits}" >
+                                    <option value="">choose one...</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                </lightning:select>
+                                <lightning:select name="select8" class="slds-p-top_small" label="Nurse Visit Time 1" value="{!v.nurseVisitTime1}" >
+                                    <option value="">choose one...</option>
+                                    <aura:iteration items="{!v.timeValues}" var="ind" indexVar="key">
+                                        <option value="{!ind}" text="{!ind}"  />
+                                    </aura:iteration>
+                                </lightning:select>
+                            	<!--lightning:input type="time" class="slds-p-top_small" name="Nurse Visit Time 1" label="Nurse Visit Time 1" value="{!v.nurseVisitTime1}"/>
+                            	<lightning:input type="time" class="slds-p-top_small" name="Nurse Visit Time 2" label="Nurse Visit Time 2" value="{!v.nurseVisitTime2}"/-->
+                                <lightning:select name="select12" class="slds-p-top_small" label="Nurse Visit Time 2" value="{!v.nurseVisitTime2}" >
+                                    <option value="">choose one...</option>
+                                    <aura:iteration items="{!v.timeValues}" var="ind" indexVar="key">
+                                        <option value="{!ind}" text="{!ind}"  />
+                                    </aura:iteration>
+                                </lightning:select>
+                        </div>
+                    </div>
+                    <!--Modal/Popup Box Footer Starts here-->
+                    <footer class="slds-modal__footer slds-p-top_medium">
+                        <lightning:button variant="neutral"
+                                          label="Done"
+                                          disabled="{!v.IsDisabled}"
+                                          title="Done"
+                                          onclick="{!c.assignTask}"/>
+                        <lightning:button variant="neutral"
+                                          label="Cancel"
+                                          title="Cancel"
+                                          onclick="{! c.closeModel }"/>
+                    </footer>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

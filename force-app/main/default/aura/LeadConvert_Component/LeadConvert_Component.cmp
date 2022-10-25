@@ -1,0 +1,201 @@
+<aura:component implements="force:lightningQuickActionwithoutHeader,force:hasRecordId" 
+                controller="LeadConvert_Controller">
+    <aura:attribute name="options" type="List"  /> 					<!-- used to hold the contact salutation-->
+    <aura:attribute name="activeSections" type="List" default="['Account','Contact','Opportunity']" />
+    <aura:attribute name="wrapperObj" type="LeadConvert_Controller.wrapperClass" />
+    <aura:attribute name="isError" type="boolean" default="false" /> <!--used for validation handling-->
+    <aura:attribute name="disableBox" type="boolean" default="false" /> <!--used to enable/disable contact section when contact checkbox uncheck/check-->
+    <aura:attribute name="disableConBox" type="boolean" default="false" /> <!--used to enable/disable opportunity section from opportunity checkbox uncheck/check-->
+    
+    <!--Used to enable/disable the account section from account create new/choose existing radio button-->
+    <aura:attribute name="disableAccLookupBox" type="boolean" default="false" />
+    <aura:attribute name="disableAccBox" type="boolean" default="false" />
+    
+    <!--Used to enable/disable the contact section from contact create new/choose existing radio button-->
+    <aura:attribute name="disableContBox" type="boolean" default="false" />
+    <aura:attribute name="disableContLookupBox" type="boolean" default="false" />
+    
+    <!--Used to enable/disable the opportunity section from opportunity create new/choose existing radio button-->
+    <aura:attribute name="disableOppBox" type="boolean" default="false" />
+    <aura:attribute name="disableOppLookupBox" type="boolean" default="false" />
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:card>
+        <aura:set attribute="title">
+            <div class="slds-align_absolute-center slds-modal__header">
+                <div class="slds-m-left_x-small" style="font-size:18px;">Convert Lead</div>	
+            </div>
+        </aura:set>
+       <!-- <aura:if isTrue="{!v.isError}">
+            <div class="slds-text-color_inverse slds-p-around_x-small" style="background-color:rgb(194,57,52);border-radius:5px;">
+                <lightning:icon iconName="utility:error" variant="inverse" size="x-small" class="slds-p-right_small"/>
+                Review the errors on this page.
+            </div>
+        </aura:if>-->
+            <lightning:accordion aura:id="accordion" 
+                                 activeSectionName="{!v.activeSections}" 
+                                 allowMultipleSectionsOpen="true">
+                
+                <!---========================Account section============================================-->
+                <lightning:accordionSection name="Account" label="Account">
+                    <div class="slds-grid slds-grid_vertical slds-p-left--small slds-p-right--small">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="radio" 
+                                             label="Create New"
+                                             checked="true"
+                                             value="{!v.wrapperObj.isAccountNew}" 
+                                             onchange="{!c.populateAccount}"
+                                             aura:id="newAcc"
+                                             style="font-weight:bold;"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input label="Account Name" value="{!v.wrapperObj.accName}" 
+                                             disabled="{!v.disableAccBox}"
+                                             required="true"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="radio" 
+                                             label="Choose Existing" 
+                                             value="{!v.wrapperObj.isAccountExis}"
+                                             onchange="{!c.onExisting}" 
+                                             class="slds-m-top_x-small"
+                                             aura:id="exisAcc"
+                                             style="font-weight:bold;"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <c:strike_lookup label="Account Search" object="Account" searchField="Name" 
+                                             value="{!v.wrapperObj.accountId}"
+                                             iconName="standard:account" order="Name" 
+                                             loadingMessage="Loading..."
+                                             disabled="{!v.disableAccLookupBox}"
+                                             required="true"
+                                             errorMessage="Invalid input" showRecentRecords="true"
+                                             filter="{!'RecordType.Name=\'Business Account\''}"/> 
+                        </div>
+                         <span style="display:none;color:rgb(194,57,52);" id="error2">Complete this field.</span>
+                    </div>
+                </lightning:accordionSection>
+                
+                <!---==========================Contact section=====================================-->
+                <lightning:accordionSection name="Contact" label="Contact">
+                    <div class="slds-grid slds-grid_vertical slds-p-left--small slds-p-right--small">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="radio" 
+                                             label="Create New" 
+                                             checked="true" 
+                                             disabled="{!v.disableConBox}"
+                                             value="{!v.wrapperObj.isNewContact}"
+                                             onchange="{!c.createNewContact}"
+                                             aura:id="newCon"
+                                             style="font-weight:bold;"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1"> 
+                            <lightning:select disabled="{!if(or(v.disableConBox==true,v.disableContBox==true),true,false)}"
+                                              name="Salutation" 
+                                              label="Salutation"
+                                              aura:id="select">
+                                <option value="0">--None--</option>
+                                <aura:iteration items="{!v.options}" var="itm">
+                                    <option text="{!itm.value}"></option>
+                                </aura:iteration>
+                            </lightning:select>                    
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input label="First Name" value="{!v.wrapperObj.con.FirstName}" 
+                                             disabled="{!if(or(v.disableConBox==true,v.disableContBox==true),true,false)}" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input label="Middle Name" value="{!v.wrapperObj.con.MiddleName}" 
+                                             disabled="{!if(or(v.disableConBox==true,v.disableContBox==true),true,false)}" />                    
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input label="Last Name" value="{!v.wrapperObj.lead.Name}" 
+                                             disabled="{!if(or(v.disableConBox==true,v.disableContBox==true),true,false)}" required="true" />                    
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input label="Suffix" value="{!v.wrapperObj.con.suffix}" 
+                                             disabled="{!if(or(v.disableConBox==true,v.disableContBox==true),true,false)}" />                    
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="radio" 
+                                             label="Choose Existing"
+                                             value="{!v.wrapperObj.isExisContact}"
+                                             disabled="{!v.disableConBox}"
+                                             onchange="{!c.existingContact}"
+                                             aura:id="exisCon"
+                                             class="slds-m-top_x-small" 
+                                             style="font-weight:bold;"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <c:strike_lookup label="Contact Search" object="Contact" searchField="Name" 
+                                             value="{!v.wrapperObj.contId}"
+                                             disabled="{!if(or(v.disableConBox==true,v.disableContLookupBox==true),true,false)}"
+                                             iconName="standard:contact" order="Name" 
+                                             loadingMessage="Loading..."
+                                             required="true"
+                                             errorMessage="Invalid input" 
+                                             showRecentRecords="true"/> 
+                        </div>
+                        <span style="display:none;color:rgb(194,57,52);" id="error4">Complete this field.</span>
+                        <div class="slds-col slds-size_1-of-1 slds-m-top--small">
+                            <lightning:input type="checkbox" 
+                                             label="Don't create an Contact upon conversion" 
+                                             onchange="{!c.disableRadio}" 
+                                             aura:id="conchk"/>
+                        </div>
+                    </div>
+                </lightning:accordionSection>
+                
+                <!---===============================Opportunity section=======================================-->
+                <lightning:accordionSection name="Opportunity" label="Opportunity">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input type="radio" 
+                                         label="Create New" 
+                                         checked="true"
+                                         disabled="{!v.disableBox}"
+                                         value="{!v.wrapperObj.isNewOpp}"
+                                         onchange="{!c.createNewOpportunity}"
+                                         aura:id="newOpp"
+                                         style="font-weight:bold;"/>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input label="Opportunity Name" value="{!v.wrapperObj.oppName}" 
+                                         required="true" 
+                                         disabled="{!if(or(v.disableBox==true,v.disableOppBox==true),true,false)}"/>                    
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input type="radio" 
+                                         label="Choose Existing"
+                                         onchange="{!c.existingOpportunity}"
+                                         value="{!v.wrapperObj.isExisOpp}"
+                                         aura:id="exisOpp"
+                                         disabled="{!v.disableBox}"
+                                         class="slds-m-top_x-small" 
+                                         style="font-weight:bold;"/>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <c:strike_lookup label="Opportunity Search" object="Opportunity__c" 
+                                         searchField="Name" 
+                                         disabled="{!if(or(v.disableBox==true,v.disableOppLookupBox==true),true,false)}"
+                                         value="{!v.wrapperObj.oppId}"
+                                         required="true"
+                                         iconName="custom:custom15" order="Name" loadingMessage="Loading..."
+                                         errorMessage="Invalid input" showRecentRecords="true"/> 
+                    </div>
+                    <span style="display:none;color:rgb(194,57,52);" id="error6">Complete this field.</span>
+                    <div class="slds-col slds-size_1-of-1 slds-m-top--small">
+                        <lightning:input type="checkbox" 
+                                         label="Don't create an opportunity upon conversion" 
+                                         onchange="{!c.disableOppRadio}" 
+                                         aura:id="oppchk"/>
+                    </div>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        <div class="slds-m-top--small modal-footer slds-modal__footer">
+            <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{!c.handleCancel}" />
+            <lightning:button variant="brand" title="Save" label="Convert" onclick="{!c.convertLead}" iconName="action:lead_convert" />
+        </div>
+    </lightning:card>
+</aura:component>

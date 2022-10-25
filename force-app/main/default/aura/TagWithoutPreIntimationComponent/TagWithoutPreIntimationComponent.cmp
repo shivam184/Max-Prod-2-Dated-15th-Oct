@@ -1,0 +1,66 @@
+<aura:component implements="force:appHostable" controller="PreIntimationTaggingApex">
+    
+    <aura:HTML tag="style">
+        .slds-modal__container{
+        max-width:70rem !important;
+        width:90% !important;
+        }
+    </aura:HTML>
+    
+    <aura:attribute name="selectedLead" type="String" default="" />
+    <aura:attribute name="selectedAdmissionId" type="String" default="" />
+    <aura:attribute name="remarks" type="String" default="" />
+    <aura:attribute name="mecpName" type="String" />
+    <aura:attribute name="showMessage" type="Boolean" default="false" />
+    <aura:attribute name="showTable" type="Boolean" default="false" />
+    <aura:attribute name="firstBlockColumns" type="List"/>
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="couponCode" type="Boolean" default="false" />
+    
+    <aura:registerEvent name="sampleEvent" type="c:UpdateLeadMecpType"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <div>
+        <lightning:card>
+            <aura:set attribute="title">
+            </aura:set>
+            <center>
+                <span style="display:none;color:red;" id="error3">Admission acknowledgement can't be tagged without pre-intimation</span>
+            </center>
+            <center>
+                <span style="display:none;color:red;" id="error1">Please Select MECP Source</span>
+            </center>
+            <div onkeyup="{!c.doGetMECPDoctorJS}">
+                <lightning:input type="text" label="MECP Source" value="{!v.mecpName}" />
+            </div>
+            
+            <div class="slds-col slds-size_1-of-1">
+                <lightning:textarea name="input2" label="Remarks" value="{!v.remarks}"/>
+                <center><span style="display:none;color:red;" id="error2">Please Fill Remarks</span></center>
+            </div>
+            
+            <aura:if isTrue="{!v.showMessage}">
+                <div class="slds-p-left_small" style="color:red;" >
+                    <br/>
+                    No Mecp Source found
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.showTable}">
+                <br/>
+                <c:LightningDataTable columns="{!v.firstBlockColumns}" data="{!v.data}" selectedMecpSource="{!v.selectedLead}" tableType="Account"/>
+            </aura:if>
+            <aura:set attribute="footer">
+                <div class="slds-clearfix">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_right">
+                            <lightning:button label="Cancel" title="Cancel" onclick="{!c.handleCancel}" />
+                            <lightning:button variant="brand" label="Proceed" title="Save" onclick="{!c.handleProceed}" />
+                        </div>
+                    </div>
+                </div>
+            </aura:set>
+        </lightning:card>
+    </div>
+</aura:component>

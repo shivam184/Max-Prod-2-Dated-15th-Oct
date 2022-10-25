@@ -1,0 +1,190 @@
+<aura:component implements="force:appHostable" controller="InternationalQueryForm">
+    
+    
+    <aura:attribute name="toggleSpinner" type="boolean" default="false"/>
+    
+    <aura:attribute name="lead" type="Lead__c" default="{'sObjectType':'Lead__c', 'Passport_No__c':'','Query_subject__c':'', 'Business_Unit__c':'' }"/>
+    <aura:attribute name="country" type="String" default=""/>
+    <aura:attribute name="hcfprt" type="String" default=""/>
+    <aura:attribute name="picvalue" type="List"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="parentId" type="Id"  />
+    <aura:attribute name="wrapFiles" type="List[]"/>
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="fileToBeUploaded" type="Object[]"/>
+    <aura:attribute name="fileId" type="String"/>
+    <aura:attribute name="base64Data" type="string[]" default="" />
+    <aura:attribute name="Spinner" type="boolean" default="false" /> 
+    <aura:attribute name="showAttachFile" type="Boolean" default="false" />
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 70rem !important;
+        width:65% !important;
+        }
+        
+    </aura:html>     
+    
+    <div aura:id="editDialog" role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+        <aura:if isTrue="{!v.Spinner}">
+    <div aura:id="spinnerId" class="slds-spinner_container">
+       <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+         <span class="slds-assistive-text">Loading</span>
+         <div class="slds-spinner__dot-a"></div>
+         <div class="slds-spinner__dot-b"></div>
+       </div>
+    </div>
+ </aura:if>
+        <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">International Query Form</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium">
+                <div style="background-color:#fff;border-radius:5px;"> 
+                    <div class="slds-section slds-is-open ">
+                        <h3 class="slds-section__title">
+                            <div class="slds-button slds-section__title-action" aria-expanded="true">
+                                <span class="slds-truncate" title="Section Title">Basic Information</span>
+                            </div>
+                        </h3>
+                    </div>
+                    
+                    <div class="slds-grid slds-wrap">
+                        
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <lightning:input type="text" name="input1" label="FirstName" value="{!v.lead.First_Name__c}"  autocomplete="off" style="width:500px"/>  
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <lightning:input type="text" name="lastname" label="LastName" aura:id="lastname" value="{!v.lead.Last_Name__c}" autocomplete="off" required="true" style="width:600px"/>
+                                
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                
+                                <div class="slds-form-element__control">
+                                    <lightning:select   label="Business Unit" aura:id="Businessunit" value="{!v.lead.Business_Unit__c}" required="true" >
+                                        <option value="">-- None --</option>
+                                        <aura:iteration items="{!v.picvalue}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    </lightning:select>   
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                
+                                <div class="slds-form-element__control">
+                                    <c:strike_lookup label="*Country" object="Address_Master__c" searchField="Name" value="{!v.country}"
+                                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                     errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'Country\''}"   />  
+                                    <span style="display:none;color:#c23934;" id="counrequrd">Complete this field.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                
+                                <div class="slds-col slds-size_1-of-1">
+                                    <div class="slds-form-element__control">
+                                        <lightning:input type="Text" name="input2" label="Passport No."  aura:id="passportno" value="{!v.lead.Passport_No__c}" autocomplete="off" style="width:400px" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                
+                                <div class="slds-col slds-size_1-of-1">
+                                    <div class="slds-form-element__control">
+                                        <lightning:input type="Text" name="input2" label="Subject" value="{!v.lead.Query_subject__c}" autocomplete="off" style="width:400px" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                        
+                        <div class="slds-col slds-size_1-of-2">
+                            
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <div class="slds-form-element__control">
+                                    <c:strike_lookup label="*HCF Partner" object="Account" searchField="Name" value="{!v.hcfprt}"
+                                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                     errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'International HCF Account\''}" />
+                                    <span style="display:none;color:#c23934;" id="hcfrequrd">Complete this field.</span>
+                                </div>
+                            </div> 
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+            <footer class="slds-modal__footer">
+			   <div class="slds-clearfix">
+ 			 <div class="slds-float_left">
+                <aura:iteration items="{!v.wrapFiles}" var="wrap" indexVar="index">
+                    <div class="slds-grid slds-wrap">
+                       <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    
+                    <lightning:layout>
+                        <td>
+                        <lightning:layoutItem  flexibility="auto, no-grow">
+                            <th class="" scope="col">
+                               <lightning:input type="file" files="{!v.fileToBeUploaded}" name="{!index}" label="" accesskey="{!index}" onchange="{!c.handleChangeFiles}"/>
+                            </th>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="4" >
+                            <th class="" scope="col">
+                                <span style="color:green;">{!wrap.fname}</span>
+                            </th>
+                        </lightning:layoutItem> 
+                        </td>
+                        <div class="slds-col slds-size--1-of-1  slds-large-size--6-of-12">
+                       <td>
+                        <lightning:layoutItem size="4" >
+                            <th class="" scope="col">
+                                 <lightning:buttonIcon iconName="utility:new" variant="bare" name="{!index}" onclick="{!c.addRow}"/>
+                            </th>
+                        </lightning:layoutItem> 
+                       
+                        <lightning:layoutItem size="4" >
+                            <th class="" scope="col">
+                                <lightning:buttonIcon iconName="utility:delete" variant="bare" name="{!index}" onclick="{!c.delRow}"/>
+                            </th>
+                        </lightning:layoutItem> 
+                        </td>
+                        </div>
+                    </lightning:layout>
+                </tr>
+            </thead>
+        </table>
+                    </div>
+                </aura:iteration>
+                </div>
+                </div>
+                <div class="slds-clearfix">
+                <div class="slds-align_absolute-center" style="height:5rem">
+                <lightning:button variant="neutral"
+                                  label="Cancel"
+                                  title="Cancel"
+                                  onclick="{! c.closeModel }"/>
+                <lightning:button variant="brand"
+                                  label="Save"
+                                  title="Save"
+                                  onclick="{!c.doSave}"/>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <aura:if isTrue="{!v.toggleSpinner}">
+            <div>
+                <lightning:spinner variant="brand" />
+            </div>
+        </aura:if>
+    </div>
+    
+    <div aura:id="overlay" class="slds-backdrop slds-backdrop--open"></div>
+    
+</aura:component>

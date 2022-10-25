@@ -1,0 +1,53 @@
+<apex:page showHeader="false" sidebar="false">
+    
+    <apex:includeLightning />
+    
+    <div id="lightning" />
+    <script>
+    var visualForceFunction = function(event)
+    {
+        // window.close();
+        window.location.href='https://maxhealthcare.lightning.force.com/lightning/o/Lead__c/list?filterName=Recent';
+    }
+    /*window.onload = setupPage;
+    function setupPage() {
+        
+        sforce.one.showToast({
+            
+            "title": "Hello There!!",
+            
+            "message": "I am a toast message being fired from visualforce page",
+            
+            "type": "success" //supported types are error, success, info, warning
+            
+        });
+        
+    }*/
+    var mobileNo = '{!$CurrentPage.parameters.mobileno}';
+    var param = '{!$CurrentPage.parameters.dt}';
+    var UserID = '{!$CurrentPage.parameters.UserID}';
+    
+    if(mobileNo!=undefined && mobileNo.length>0){ 
+        $Lightning.use("c:CallDisposalApp", function() {
+            $Lightning.createComponent("c:callCenterCallDisposalCmp",
+                                       {"mobileNo" : mobileNo,"callingMobileNo" : mobileNo,"smsNumber" : mobileNo, "UserID": UserID,"param" : param},
+                                       "lightning",
+                                       function() {
+                                           //  $A.eventService.addHandler({"event": "force:showToast", "handler": toast});
+                                           $A.eventService.addHandler({ "event": "c:CloseWindow", "handler" : visualForceFunction});      
+                                       });
+        });
+    }
+    else{
+        $Lightning.use("c:CallDisposalApp", function() {
+            $Lightning.createComponent("c:callCenterCallDisposalCmp",
+                                       {},
+                                       "lightning",
+                                       function() {
+                                           
+                                       });
+        });
+    }
+    </script>
+    
+</apex:page>

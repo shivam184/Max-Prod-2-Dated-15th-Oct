@@ -1,0 +1,50 @@
+<aura:component controller="VisaInviteApexCtrl">
+
+    <aura:attribute name="isAttendentModel" type="boolean" default="false" />
+    <aura:attribute name="newAttendee" type="Attendant_Detail__c" default="{'sobjectType':'Attendant_Detail__c'}" />
+    <aura:attribute name="visaInviteId" type="String"/>
+    <aura:attribute name="parent" type="Aura.Component" required="true"/>
+    <aura:attribute name="firstAttandee" type="Boolean" default="false" />
+    <aura:attribute name="attendantRecordType" type="String" default="Attendee" />
+    <aura:attribute name="relationOptions" type="List" default="[]" />
+    <aura:attribute name="isDonorPresent" type="Boolean" default="false" />
+    <aura:attribute name="initAddDonor" type="Boolean" default="false" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <div class="slds-m-around_xx-large">
+
+        <aura:if isTrue="{!v.isAttendentModel}">
+
+            <!-- Modal/Popup Box starts here-->
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal/Popup Box Header Starts here-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{! c.closeModel }"
+                            alternativeText="close" variant="bare-inverse" class="slds-modal__close" />
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New {!v.attendantRecordType} Detail</h2>
+                    </header>
+                    <!--Modal/Popup Box Body Starts here-->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:input name="Attendant_Name" label="{!v.attendantRecordType +' Name'}" value="{!v.newAttendee.Name}" maxlength="255" />
+                        <lightning:input type="date" name="input1" label="Date of Birth" value="{!v.newAttendee.Date_of_Birth__c}"/>
+                        <lightning:input name="Passport_number" label="{!v.attendantRecordType +' Passport number'}" value="{!v.newAttendee.Passport_number__c}" maxlength="255"/>
+                        <lightning:select name="relation" label="Relation" value="{!v.newAttendee.Relation__c}">
+                            <aura:iteration items="{!v.relationOptions}" var="option">
+                                <option text="{!option.label}" value="{!option.value}" selected="{!option.selected}"/>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    <!--Modal/Popup Box Footer Starts here-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{! c.closeModel }" />
+                        <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveAttendee}" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

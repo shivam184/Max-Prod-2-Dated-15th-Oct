@@ -1,0 +1,245 @@
+<aura:component implements="force:appHostable" controller="PreIntimationFormApex">
+    
+    <aura:attribute name="isDesktop" type="Boolean" default="true" />
+    <aura:attribute name="patientName" type="String" default="" />
+    <aura:attribute name="ownerName" type="String" default="" />
+    <aura:attribute name="selectedMecpNameId"  type="String" default="" />
+    <aura:attribute name="mecpSource" type="String" default="" />
+    <aura:attribute name="treatingDoctorNameId" type="String" default="" />
+    <aura:attribute name="selectedDepartment" type="String" default="" />
+    <aura:attribute name="listDepartment" type="List" />
+    <aura:attribute name="ailment" type="String" default="" />
+    <aura:attribute name="intimationDateTime" type="String" default="" />
+    <aura:attribute name="selectedUploadDocument" type="String" default="NO" />
+    <aura:attribute name="drIntimationDateTime" type="DateTime" />
+    <aura:attribute name="selectedPreIntimationStatus" type="String" default="" />
+    <aura:attribute name="listPreIntimationStatus" type="List" />
+    <aura:attribute name="notes" type="String" default="" />
+    <aura:attribute name="showMecpSource" type="Boolean" default="true" />
+    <aura:attribute name="disabledNotes" type="Boolean" default="true" />
+    <aura:attribute name="base64Data" type="String" default="" />
+    <aura:attribute name="fileName" type="String" default="" />
+    <aura:attribute name="files" type="Object[]"/>
+    <aura:attribute name="listBusinessUnit" type="List" />
+    <aura:attribute name="selectedBusinessUnit" type="String" default="" />
+    <aura:attribute name="showError" type="Boolean" default="false" />
+    <aura:attribute name="errorMsg" type="String" default="" />
+    <aura:attribute name="selectedFileType" type="String" default="" />
+    <aura:attribute name="listFileType" type="List" />
+    <aura:attribute name="patientage" type="String"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInIt}" />
+    <aura:handler name="change" value="{!v.selectedMecpNameId}" action="{!c.hideMecpSource}" />
+    <aura:handler name="change" value="{!v.base64Data}" action="{!c.showAttachedData}" />
+    <!--<aura:handler name="change" value="{!v.selectedFileType}" action="{!c.updateDocument}" />-->
+    <aura:handler name="change" value="{!v.treatingDoctorNameId}" action="{!c.departmentvalue}"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide" />
+    
+    <lightning:card title="PRE INTIMATION : INFORMATION" iconName="standard:account" class="abc">
+        <div class="slds-p-left_small" style="font-size:30px;">New Pre Intimation</div>
+        <div class="slds-p-bottom_small" />
+        <div class="slds-p-bottom_small" />
+        <aura:set attribute="actions">
+            <aura:if isTrue="{!v.isDesktop}" >
+                <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                <lightning:button label="Save" variant="brand" onclick="{!c.doSave}"/>
+            </aura:if>
+        </aura:set>
+        
+        <aura:set attribute="footer">
+            <aura:if isTrue="{!!v.isDesktop}" >
+                <lightning:button label="Cancel" onclick="{!c.doCancel}"/>
+                <lightning:button label="Save" variant="brand" onclick="{!c.doSave}"/>
+            </aura:if>
+        </aura:set>
+        
+        <aura:if isTrue="{!v.showError}">
+            <div style="color:red;font-size:24px;" class="slds-p-left--medium">{!v.errorMsg}</div>
+        </aura:if>
+        <aura:if isTrue="{!v.isDesktop}">
+            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                <div class="slds-col slds-size_1-of-2">
+                    <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="text" name="input1" label="Patient Name" value="{!v.patientName}" required="true"/>  
+                        </div>
+                        <span style="display:none;color:red;" id="error1">Please Fill Patient Name</span>
+                        <div class="slds-col slds-size_1-of-1">
+                            <span onkeypress="{!c.isNumber}">
+                                <lightning:input name="inputage" label="Patient Age" value="{!v.patientage}" formatter="decimal" maxlength="3" messageWhenValueMissing="Maximum Length is 3"/>  
+                            </span>
+                            
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="text" name="input2" label="Owner" disabled="true" value="{!v.ownerName}" />  
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <c:strike_lookup label="MECP Name" object="Account" searchField="Name" value="{!v.selectedMecpNameId}"
+                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                             errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'MECP Doctor Business\''}" required="true"/>  
+                        </div>
+                        <span style="display:none;color:red;" id="errora">Please Fill MECP Name</span>
+                        <div class="slds-col slds-size_1-of-1">
+                            <aura:if isTrue="{!v.showMecpSource}">
+                                <lightning:input type="text" name="input4" label="MECP Source" value="{!v.mecpSource}" required="true"/>  
+                            </aura:if>
+                        </div>
+                        <span style="display:none;color:red;" id="error2">Please Fill MECP Name or MECP Source </span>
+                        <div class="slds-col slds-size_1-of-1">
+                            <c:strike_lookup label="Treating Dr.Name" object="Account" searchField="Name" value="{!v.treatingDoctorNameId}"
+                                             iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                             errorMessage="Invalid input" showRecentRecords="true" filter = "{!'RecordType.Name=\'Doctor\''}"  />  
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            
+                            <lightning:input type="text" name="departmentId" label="Department"  value="{!v.selectedDepartment}" disabled="true"/>  
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="text" name="input7" label="Ailment" value="{!v.ailment}" required="true"/>  
+                        </div>
+                        <span style="display:none;color:red;" id="error3">Please Fill Ailment</span>
+                        <div class="slds-col slds-size_1-of-1">
+                            <aura:if isTrue="{!v.listBusinessUnit.length > 0}" >
+                                <lightning:select name="businessUnit" label="Business Unit" aura:id="businessUnitId" value="{!v.selectedBusinessUnit}">
+                                    <aura:iteration items="{!v.listBusinessUnit}" var="option">
+                                        <option text="{!option}" value="{!option}"/>
+                                    </aura:iteration>
+                                </lightning:select>	
+                            </aura:if> 
+                        </div>
+                        <!--<div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="text" name="input8" label="Intimation Date Time" disabled="true" value="{!v.intimationDateTime}" />  
+                        </div>-->
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="text" name="input9" label="Is Document Uploaded" disabled="true" value="{!v.selectedUploadDocument}" />  
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:input type="datetime" name="input10" label="Dr. Intimation Date Time"  value="{!v.drIntimationDateTime}" />  
+                        </div>
+                        
+                        
+                        
+                    </div>     
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:input aura:id="fileInput" type="file" name="file" multiple="false" accept="image/png, .pdf" files="{!v.files}" onchange="{!c.onReadImage}"
+                                         label="Upload Attachment"/>
+                        <div style="color:rgba(27, 82, 151, 1.0);">{!v.fileName}</div>
+                        
+                        <img id="imgSrc" src="" style="max-width:50%;"/> 
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning:select name="fileType" label="File Type" aura:id="fileType" value="{!v.selectedFileType}" disabled="{!v.disabledNotes}" required="{!if(v.disabledNotes,false,true)}">
+                            <option value="">---None---</option>
+                            <aura:iteration items="{!v.listFileType}" var="option">
+                                <option text="{!option}" value="{!option}"/>
+                            </aura:iteration>
+                        </lightning:select>  
+                    </div>
+                    <span style="display:none;color:red;" id="error4">Please Select File Type</span>
+                    <div class="slds-col slds-size_1-of-1">
+                        <ui:inputTextArea aura:id="notes" label="Notes" value="{!v.notes}" rows="8" disabled="{!v.disabledNotes}"/>
+                    </div>
+                </div>
+            </div>
+            <aura:set attribute="else">
+                <ui:scrollerWrapper class="scrollerSize"> 
+               <!-- <div class="slds-scrollable" style="height:55rem;"> -->
+                    <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                        <div class="slds-col slds-size_1-of-1">
+                            <div class="slds-grid slds-wrap slds-p-left--small slds-p-right--small">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="input1" label="Patient Name" value="{!v.patientName}" required="true"/>  
+                                </div>
+                                <span style="display:none;color:red;" id="error1">Please Fill Patient Name</span>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <span onkeypress="{!c.isNumber}">
+                                        <lightning:input name="inputage" label="Patient Age" value="{!v.patientage}" formatter="decimal" maxlength="3" messageWhenValueMissing="Maximum Length is 3"/>  
+                                    </span>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="input2" label="Owner Name" disabled="true" value="{!v.ownerName}" />  
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <c:strike_lookup label="MECP Name" object="Account" searchField="Name" value="{!v.selectedMecpNameId}"
+                                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                     errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'MECP Doctor Business\''}" required="true"/>  
+                                    
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <aura:if isTrue="{!v.showMecpSource}">
+                                        <lightning:input type="text" name="input4" label="MECP Source" value="{!v.mecpSource}" required="true"/>  
+                                    </aura:if>
+                                </div>
+                                <span style="display:none;color:red;" id="error2">Please Fill MECP Name or MECP Source </span>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <c:strike_lookup label="Treating Dr.Name" object="Account" searchField="Name" value="{!v.treatingDoctorNameId}"
+                                                     iconName="standard:account" order="Name" loadingMessage="Loading..."
+                                                     errorMessage="Invalid input" showRecentRecords="true" filter="{!'RecordType.Name=\'Doctor\''}"/>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="departmentId" label="Department"  value="{!v.selectedDepartment}" disabled="true"/>   
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="input7" label="Ailment" value="{!v.ailment}" required="true"/>  
+                                </div>
+                                <span style="display:none;color:red;" id="error3">Please Fill Ailment</span>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <aura:if isTrue="{!v.listBusinessUnit.length > 0}" >
+                                        <lightning:select name="businessUnit" label="Business Unit" aura:id="businessUnitId" value="{!v.selectedBusinessUnit}">
+                                            <aura:iteration items="{!v.listBusinessUnit}" var="option">
+                                                <option text="{!option}" value="{!option}"/>
+                                            </aura:iteration>
+                                        </lightning:select>	
+                                    </aura:if> 
+                                </div>
+                                <!--<div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="input8" label="Intimation Date Time" disabled="true" value="{!v.intimationDateTime}" />  
+                                </div>-->
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="text" name="input9" label="Is Document Uploaded" disabled="true" value="{!v.selectedUploadDocument}" />  
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input type="datetime" name="input10" label="Dr. Intimation Date Time" value="{!v.drIntimationDateTime}" />  
+                                </div>
+                                <!--
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning:select name="preIntimationStatus" label="Pre Intimation Status" aura:id="preIntimationStatus" value="{!v.selectedPreIntimationStatus}" disabled="true">
+                                     
+                                    <aura:iteration items="{!v.listPreIntimationStatus}" var="option">
+                                        <option text="{!option}" value="{!option}"/>
+                                    </aura:iteration>
+                                </lightning:select>  
+                            </div>
+                            <br/>
+       -->
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:input aura:id="fileInput" type="file" name="file" multiple="false" accept="image/png, .pdf" files="{!v.files}" onchange="{!c.onReadImage}"
+                                                     label="Upload Attachment"/>
+                                    <div style="color:rgba(27, 82, 151, 1.0);">{!v.fileName}</div>
+                                    <img id="imgSrc" src="" style="max-width:30%;"/>  
+                                </div>
+                                <br/>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <lightning:select name="fileType" label="File Type" aura:id="fileType" value="{!v.selectedFileType}" disabled="{!v.disabledNotes}" required="{!if(v.disabledNotes,false,true)}">
+                                        <option value="">---None---</option>
+                                        <aura:iteration items="{!v.listFileType}" var="option">
+                                            <option text="{!option}" value="{!option}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <span style="display:none;color:red;" id="error4">Please Select File Type</span>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <ui:inputTextArea aura:id="notes" label="Notes" value="{!v.notes}" rows="3" disabled="{!v.disabledNotes}"/>
+                                </div>
+                            </div>     
+                        </div>
+                    </div>
+                <!--    </div> -->
+               </ui:scrollerWrapper> 
+            </aura:set>
+        </aura:if>
+    </lightning:card>
+</aura:component>

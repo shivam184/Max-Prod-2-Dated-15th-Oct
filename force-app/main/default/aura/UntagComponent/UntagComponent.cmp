@@ -1,0 +1,43 @@
+<aura:component implements="force:appHostable" controller="PreIntimationTaggingApex">
+    
+    <aura:attribute name="selectedLead" type="String" default="" />
+    <aura:attribute name="selectedAdmissionId" type="String" default="" />
+    <aura:attribute name="reason" type="String" default="" />
+    
+    <aura:registerEvent name="sampleEvent" type="c:UpdateLeadMecpType"/>
+    
+    <lightning:spinner aura:id="mySpinner" variant="brand" size="medium" class="slds-hide"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <div style="width:600px;height:200px;">
+        <lightning:card>
+            <aura:set attribute="title">
+            </aura:set>
+            <div class="slds-grid slds-grid_vertical slds-p-left--small slds-p-right--small">
+                <div class="slds-col slds-size_1-of-1">
+                    <c:strike_lookup label="MECP Source" object="Account" searchField="Name" value="{!v.selectedLead}"
+                                     iconName="standard:lead" order="Name" loadingMessage="Loading..."
+                                     errorMessage="Invalid input" filter="{!'Name=\'Max Dummy Account\''}" limit="3"/>
+                    
+                    <center>
+                        <span style="display:none;color:red;" id="error1">Please Select MECP Source</span>
+                    </center>
+                </div>
+                <div class="slds-col slds-size_1-of-1">
+                    <lightning:textarea name="input2" label="Reason" value="{!v.reason}"/>
+                    <center><span style="display:none;color:red;" id="error2">Please Fill Reason</span></center>
+                </div>
+            </div>
+            <aura:set attribute="footer">
+                <div class="slds-clearfix">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_right">
+                            <lightning:button label="Cancel" title="Cancel" onclick="{!c.handleCancel}" />
+                            <lightning:button variant="brand" label="Proceed" title="Save" onclick="{!c.handleProceed}" />
+                        </div>
+                    </div>
+                </div>
+            </aura:set>
+        </lightning:card>
+    </div>
+</aura:component>

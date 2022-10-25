@@ -1,0 +1,156 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" controller="GetLocationApex">
+    
+    <aura:attribute name="accRecord" type="Account" description="The record object to be displayed"/>
+    <aura:attribute name="accSimpleRecord" type="Account" description="A simplified view record object to be displayed"/>
+    <aura:attribute name="recordError" type="String" description="An error message bound to force:recordData"/>
+    <aura:attribute name="showLightningCard" type="Boolean" default="true" />
+    <aura:attribute name="currentLocation" type="Boolean" default="false" />
+    <aura:attribute name="longitude" type="Decimal" />
+    <aura:attribute name="latitude" type="Decimal" />
+    <aura:attribute name="address" type="String" />
+    <aura:attribute name="billingAddress" type="String" />
+    
+    <lightning:spinner aura:id="mySpinner" size="medium" variant="brand" class="slds-hide"/>
+    
+    <force:recordData aura:id="record"
+                      layoutType="FULL"
+                      recordId="{!v.recordId}"
+                      targetError="{!v.recordError}"
+                      targetRecord="{!v.accRecord}"
+                      targetFields ="{!v.accSimpleRecord}"
+                      mode="EDIT"/>
+    
+    <aura:if isTrue="{!v.showLightningCard}">
+        <lightning:card>
+            <aura:set attribute="title">
+                <div class="slds-align_absolute-center">
+                    <lightning:icon iconName="standard:address" size="medium"/>
+                    <u class="slds-m-left_x-small" style="font-size:18px;">Select Your Address</u>	
+                </div>
+            </aura:set>
+            
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input value="{!v.accSimpleRecord.BillingStreet}" label="Billing Street" disabled="{!v.currentLocation == true ? true : false}" /></span>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input value="{!v.accSimpleRecord.BillingCity}" label="Billing City" disabled="{!v.currentLocation == true ? true : false}" /></span>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+            </div>
+            
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input value="{!v.accSimpleRecord.BillingState}" label="Billing State" disabled="{!v.currentLocation == true ? true : false}" /></span>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input value="{!v.accSimpleRecord.BillingPostalCode}" label="Billing Postal Code" disabled="{!v.currentLocation == true ? true : false}" /></span>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+            </div>
+            
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input value="{!v.accSimpleRecord.BillingCountry}" label="Billing Country" disabled="{!v.currentLocation == true ? true : false}" /></span>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <span><lightning:input type="checkbox" label="Current Location" name="inputCheckBox" checked="{!v.currentLocation}" /></span>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    
+                </div>
+            </div>
+            
+            <br/>
+            <center>
+                <span style="display:none;color:red;" id="error1">Please fill your Billing Address Or Check Current Location Checkbox</span>
+            </center>
+            <br/>
+            
+            <aura:set attribute="footer">
+                <div class="slds-clearfix">
+                    <div class="slds-clearfix">
+                        <div class="slds-float_right">
+                            <lightning:button label="Cancel" variant="neutral" onclick="{!c.handleCancel}" />
+                            <lightning:button label="Proceed" variant="brand" onclick="{!c.handleLightningCards}" iconName="utility:forward"/>
+                        </div>
+                    </div>
+                </div>
+            </aura:set>
+            
+        </lightning:card>
+        <aura:set attribute="else">
+            <lightning:card>
+                <aura:set attribute="title">
+                    <div class="slds-align_absolute-center">
+                        <lightning:icon iconName="standard:address" size="medium"/>
+                            <u class="slds-m-left_x-small" style="font-size:18px;">Geolocation</u>	
+                    </div>
+                </aura:set>
+                
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-12">
+                        
+                    </div>
+                    <div class="slds-col slds-size_4-of-12">
+                        <span><lightning:input value="{!v.longitude}" label="Longitude" disabled="true" /></span>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12">
+                        
+                    </div>
+                    <div class="slds-col slds-size_4-of-12">
+                        <span><lightning:input value="{!v.latitude}" label="Latitude" disabled="true" /></span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-12">
+                        
+                    </div>
+                </div>
+                
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-12">
+                        
+                    </div>
+                    <div class="slds-col slds-size_10-of-12">
+                        <span><lightning:input value="{!v.address}" label="Address" disabled="true" /></span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-12">
+                        
+                    </div>
+                </div>
+                <aura:set attribute="footer">
+                    <div class="slds-clearfix">
+                        <div class="slds-clearfix">
+                            <div class="slds-float_right">
+                                <lightning:button label="Cancel" variant="neutral" onclick="{!c.handleCancel}" />
+                                <lightning:button label="Back" variant="brand" onclick="{!c.handleBack}" iconName="utility:back"/>
+                                <lightning:button label="Save" variant="brand" onclick="{!c.handleSave}" />
+                            </div>
+                        </div>
+                    </div>
+                </aura:set>
+            </lightning:card>
+        </aura:set>
+    </aura:if> 
+</aura:component>

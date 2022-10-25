@@ -1,0 +1,49 @@
+<!--Last Modified by: Nitya on 16th June: Changed the complete UI-->
+<!--LAst Modified By Nitya on 22nd June 2022: Included file Upload Component to increase size-->
+<template>
+   <div class="top">
+      <div class="slds-align_absolute-center">
+         <div class="slds-grid slds-wrap slds-grid_vertical">
+            <div class="slds-col slds-size_1-of-1 ">
+               <div class="slds-p-around_medium slds-m-top_large slds-text-align_center"><img src={maxlogo}>
+               </div>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-p-around_medium">
+               <b>
+                  <lightning-input type="phone" label="Phone" value={scoreObjPhone} name="scorePhone" data-my-id="phone"
+                     onchange={scoreHandleChange} message-when-value-missing="Phone is required"
+                     pattern="^[6789]{1}\d{9}$" message-when-pattern-mismatch="Please enter a valid phone number"
+                     required>
+                  </lightning-input>
+               </b>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-p-around_medium">
+               <b>
+                  <lightning-input type="text" label="Name" value={scoreObName} name="scoreName" data-my-id="name"
+                     onchange={scoreHandleChange} message-when-value-missing="Name is required" required>
+                  </lightning-input>
+               </b>
+            </div>
+            <!-- added now -->
+            <lightning-spinner if:true={showSpinner} alternative-text="Loading..." variant="brand"></lightning-spinner>
+            <!-- end -->
+            <div class="slds-col slds-size_1-of-1 slds-p-around_medium">
+               <b>
+                  <lightning-input type="text" label="Booking Address" value={scoreObjSampleBookingLocation}
+                     data-my-id="bookingAdrress" name="SampleBookingLocation" onchange={scoreHandleChange}
+                     message-when-value-missing="Booking Address is required" required></lightning-input>
+               </b>
+            </div>
+            <!-- using file upload -->
+            <div class="slds-col slds-size_1-of-1 slds-p-around_medium slds-text-align_center">
+               <lightning-file-upload name="fileUploader" onuploadfinished={handleUploadFinished} multiple="false"></lightning-file-upload>
+            </div>
+
+            <div class="slds-col slds-size_1-of-1 slds-p-around_medium slds-text-align_center">
+               <lightning-button type="brand" label="Submit" variant="brand" size="small" disabled={disabled}
+                  onclick={submitAction}></lightning-button>
+            </div>
+         </div>
+      </div>
+   </div>
+</template>

@@ -1,0 +1,51 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global"
+    controller="VisaInviteApexCtrl">
+    <aura:attribute name="visaInviteData" type="Object" />
+    <aura:attribute name="columns" type="List" />
+    <!-- <aura:attribute name="isNewVisaForm" type="Boolean" default="false" /> -->
+    <aura:attribute name="newVisaAttribute" type="Map" default="{'searchloader':false,'isNewBtn':false,'showAttendees':false,'recordId':'', 'recordMode':'edit','searchPassNum':'', 
+        'isloading':true, 'reloadform':false,'visaInviteNum':'','visaInviteCountry':'','emailNotificationId':'','hospitalCode':''}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doinit}" />
+
+
+    <!-- <aura:if isTrue="{!v.isNewVisaForm}">
+        
+    <c:NewVisaInviteComp isNewVisaForm="{!v.isNewVisaForm}" newVisaAttribute="{!v.newVisaAttribute}" />
+
+    <aura:set attribute="else"> -->
+
+    <lightning:card variant="Narrow" title="Visa Invite" iconName="custom:custom20">
+
+        <aura:set attribute="actions">
+            <aura:if isTrue="{!v.newVisaAttribute.isNewBtn}">
+                <lightning:button variant="brand" label="New" title="New" onclick="{! c.newInvite }" />
+
+            </aura:if>
+        </aura:set>
+
+
+        <div class="slds-box slds-is-relative slds-align_absolute-center">
+            <div class="slds-grid slds-wrap">
+                <div onkeypress="{!c.keyCheck}">
+                    <lightning:input aura:id="searchBox" name="searchBox" label="Search Passport Number"
+                        isLoading="{!v.newVisaAttribute.searchloader}" type="search"
+                        value="{!v.newVisaAttribute.searchPassNum}" />
+                </div>
+
+                <div class="slds-m-left_medium slds-p-top_medium">
+                    <lightning:button label="Search" variant="brand" title="Search" onclick="{!c.searchVisaInvite}" />
+                </div>
+            </div>
+        </div>
+
+
+        <aura:if isTrue="{!not(empty(v.visaInviteData))}">
+            <div style="height: 400px">
+                <lightning:datatable columns="{!v.columns }" data="{!v.visaInviteData}" keyField="Id"
+                    onrowaction="{!c.handleRowAction}" hideCheckboxColumn="true" />
+            </div>
+        </aura:if>
+    </lightning:card>
+    <!-- </aura:set>
+    </aura:if> -->
+</aura:component>

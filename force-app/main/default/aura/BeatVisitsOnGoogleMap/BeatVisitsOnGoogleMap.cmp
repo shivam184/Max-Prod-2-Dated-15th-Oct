@@ -1,0 +1,67 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:lightningQuickAction" access="global" controller="BeatVisitOnGoogleMapController">
+    <aura:attribute name="mapMarkers" type="Object"/>
+    <aura:attribute name="mapCenter" type="Object"/>
+    <aura:attribute name="markersTitle" type="String" default="Related Accounts"/>
+    <aura:attribute name="visitDate" type="Date"/>
+    <aura:attribute name="visitDateend" type="Date"/>
+    <aura:attribute name="footer" type="boolean" default="true"/>
+    <aura:attribute name="userList" type="List"/>
+    <aura:attribute name="tod" type="Date"/>
+    <!-- To validate the date to be today-->
+    <aura:attribute name="todayDateValidation" type="Boolean"/>
+    <aura:attribute name="zoomLevel" type="Integer" />
+    
+    
+    <!-- handlers-->
+    <aura:handler name="init" value="{!this}" action="{!c.init }"/>
+    
+    <lightning:card title="">
+        <div class="slds-grid slds-gutters slds-p-horizontal_medium">
+            <div class="{!$Browser.formFactor == 'DESKTOP' ? 'slds-col slds-size_1-of-3' : 'slds-col slds-size_1-of-3'}">
+                <lightning:input type="Date" 
+                                 aura:id="dateChange"
+                                 label="From Date"
+                                 value="{!v.visitDate}" />
+            </div>
+            
+              <div class="{!$Browser.formFactor == 'DESKTOP' ? 'slds-col slds-size_1-of-3' : 'slds-col slds-size_1-of-3'}">
+                <lightning:input type="Date" 
+                                 aura:id="dateChangeend"
+                                 label="To Date"
+                                 value="{!v.visitDateend}"
+                                 max="{!v.tod}"
+                                 onchange="{!c.dateAndUserUpdate}"/>
+                  <span style="display:none;color:red;" id="error1"> From Date cannot be greater then To Date </span>
+            </div>
+            <div class="{!$Browser.formFactor == 'DESKTOP' ? 'slds-col slds-size_1-of-3' : 'slds-col slds-size_1-of-3'}">
+              
+                <lightning:select aura:id="select" 
+                                  label="Select Sales Agent"
+                                  name="source"
+                                  class="slds-m-bottom_medium"
+                                  onchange="{!c.dateAndUserUpdate}">
+                    <option value="0">--All--</option>  
+                    <aura:iteration items="{!v.userList}" var="item">
+                        <option value="{!item.Id}" selected="{!item.selected}">{!item.Name}</option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+        </div>
+     
+        
+        <hr style="margin: 1rem 0;"/>
+        <!-- the map component -->
+        <aura:if isTrue="{!v.mapMarkers.length > 0}" >
+            <lightning:map mapMarkers="{! v.mapMarkers }"
+                           showFooter="{!v.footer}"
+                           markersTitle="{!v.markersTitle}"
+                           zoomLevel = "{!v.zoomLevel}"  center="{!v.mapCenter}"/>
+            <aura:set attribute="else">
+                <lightning:map zoomLevel="{!v.zoomLevel}" 
+                               center="{!v.mapCenter}"/>
+            </aura:set>
+        </aura:if>
+        
+    </lightning:card>
+    
+</aura:component>
